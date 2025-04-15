@@ -2,7 +2,7 @@
 	"name": "aimeos/ai-gettext",
 	"description": "Aimeos Gettext extension",
 	"keywords": ["aimeos", "extension", "gettext", "performance"],
-	"homepage": "https://aimeos.org",
+	"homepage": "https://aimeos.org/",
 	"type": "aimeos-extension",
 	"license": "LGPL-3.0",
 	"support": {
@@ -21,7 +21,8 @@
 	"minimum-stability": "dev",
 	"require": {
 		"php": ">=5.3.3",
-		"composer/installers": "~1.0"
+		"composer/installers": "^1.0",
+		"aimeos/aimeos-core": "~2016.10"
 	},
 	"require-dev": {
 		"satooshi/php-coveralls": "dev-master"
