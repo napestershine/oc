@@ -11,8 +11,9 @@
     "minimum-stability": "dev",
     "require": {
         "php": "^7.0",
-        "laravel/framework": "5.2.*",
-        "aimeos/aimeos-laravel": "~2016.04"
+        "laravel/framework": "5.4.*",
+        "aimeos/aimeos-laravel": "~2016.04",
+        "laravel/tinker": "~1.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.3",
