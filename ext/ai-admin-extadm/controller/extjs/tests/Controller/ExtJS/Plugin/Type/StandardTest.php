@@ -4,11 +4,11 @@ namespace Aimeos\Controller\ExtJS\Plugin\Type;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2011
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2011
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -48,7 +48,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $this->object->searchItems( $params );
 
 		if( ( $type = reset( $result ) ) === false ) {
-			throw new \Exception( 'No plugin type found' );
+			throw new \RuntimeException( 'No plugin type found' );
 		}
 
 		$this->assertEquals( 1, count( $type ) );

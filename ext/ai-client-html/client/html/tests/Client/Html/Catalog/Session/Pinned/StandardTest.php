@@ -5,9 +5,9 @@ namespace Aimeos\Client\Html\Catalog\Session\Pinned;
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -39,13 +39,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->context->getSession()->set( 'aimeos/catalog/session/pinned/list', null );
 		unset( $this->object );
-	}
-
-
-	public function testGetHeader()
-	{
-		$output = $this->object->getHeader();
-		$this->assertNotNull( $output );
 	}
 
 
@@ -105,7 +98,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->object->process();
 
 		$pinned = $this->context->getSession()->get( 'aimeos/catalog/session/pinned/list' );
-		$this->assertEquals( array(), $pinned );
+		$this->assertEquals( [], $pinned );
 	}
 
 
@@ -126,7 +119,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $manager->searchItems( $search );
 
 		if( ( $item = reset( $result ) ) === false ) {
-			throw new \Exception( sprintf( 'No product item with code "%1$s" found', $code ) );
+			throw new \RuntimeException( sprintf( 'No product item with code "%1$s" found', $code ) );
 		}
 
 		return $item;

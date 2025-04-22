@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Controller
  * @subpackage Common
  */
@@ -88,8 +88,8 @@ class Standard
 
 		try
 		{
-			$delete = $listMap = array();
-			$map = $this->getMappedChunk( $data );
+			$delete = $listMap = [];
+			$map = $this->getMappedChunk( $data, $this->getMapping() );
 			$listItems = $product->getListItems( 'media', $this->listTypes );
 
 			foreach( $listItems as $listItem )
@@ -128,7 +128,7 @@ class Standard
 					$list['media.url'] = $url;
 
 					$refItem->fromArray( $this->addItemDefaults( $list ) );
-					$manager->saveItem( $refItem );
+					$refItem = $manager->saveItem( $refItem );
 
 					$list['product.lists.typeid'] = $this->getTypeId( 'product/lists/type', 'media', $typecode );
 					$list['product.lists.parentid'] = $product->getId();
@@ -136,7 +136,7 @@ class Standard
 					$list['product.lists.domain'] = 'media';
 
 					$listItem->fromArray( $this->addListItemDefaults( $list, $pos++ ) );
-					$listManager->saveItem( $listItem );
+					$listManager->saveItem( $listItem, false );
 				}
 			}
 
@@ -147,7 +147,7 @@ class Standard
 			$manager->deleteItems( $delete );
 			$listManager->deleteItems( array_keys( $listItems ) );
 
-			$remaining = $this->getObject()->process( $product, $data );
+			$data = $this->getObject()->process( $product, $data );
 
 			$manager->commit();
 		}
@@ -157,7 +157,7 @@ class Standard
 			throw $e;
 		}
 
-		return $remaining;
+		return $data;
 	}
 
 

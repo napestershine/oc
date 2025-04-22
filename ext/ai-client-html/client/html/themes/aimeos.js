@@ -1,28 +1,9 @@
-/*
- * backgroundSize: A jQuery cssHook adding support for "cover" and "contain" to IE6,7,8
- *
- * Requirements:
- * - jQuery 1.7.0+
- *
- * latest version and complete README available on Github:
- * https://github.com/louisremi/jquery.backgroundSize.js
- *
- * Copyright 2012 @louis_remi
- * Licensed under the MIT license.
- *
- * This saved you an hour of work?
- * Send me music http://www.amazon.co.uk/wishlist/HNTU0468LQON
- */
-(function(e,t,n,r,i){var s=e("<div>")[0],o=/url\(["']?(.*?)["']?\)/,u=[],a={top:0,left:0,bottom:1,right:1,center:.5};if("backgroundSize"in s.style&&!e.debugBGS){return}e.cssHooks.backgroundSize={set:function(t,n){var r=!e.data(t,"bgsImg"),i,s,o;e.data(t,"bgsValue",n);if(r){u.push(t);e.refreshBackgroundDimensions(t,true);s=e("<div>").css({position:"absolute",zIndex:-1,top:0,right:0,left:0,bottom:0,overflow:"hidden"});o=e("<img>").css({position:"absolute"}).appendTo(s),s.prependTo(t);e.data(t,"bgsImg",o[0]);i=(e.css(t,"backgroundPosition")||e.css(t,"backgroundPositionX")+" "+e.css(t,"backgroundPositionY")).split(" ");e.data(t,"bgsPos",[a[i[0]]||parseFloat(i[0])/100,a[i[1]]||parseFloat(i[1])/100]);e.css(t,"zIndex")=="auto"&&(t.style.zIndex=0);e.css(t,"position")=="static"&&(t.style.position="relative");e.refreshBackgroundImage(t)}else{e.refreshBackground(t)}},get:function(t){return e.data(t,"bgsValue")||""}};e.cssHooks.backgroundImage={set:function(t,n){return e.data(t,"bgsImg")?e.refreshBackgroundImage(t,n):n}};e.refreshBackgroundDimensions=function(t,n){var r=e(t),i={width:r.innerWidth(),height:r.innerHeight()},s=e.data(t,"bgsDim"),o=!s||i.width!=s.width||i.height!=s.height;e.data(t,"bgsDim",i);if(o&&!n){e.refreshBackground(t)}};e.refreshBackgroundImage=function(t,n){var r=e.data(t,"bgsImg"),i=(o.exec(n||e.css(t,"backgroundImage"))||[])[1],s=r&&r.src,u=i!=s,a,f;if(u){r.style.height=r.style.width="auto";r.onload=function(){var n={width:r.width,height:r.height};if(n.width==1&&n.height==1){return}e.data(t,"bgsImgDim",n);e.data(t,"bgsConstrain",false);e.refreshBackground(t);r.style.visibility="visible";r.onload=null};r.style.visibility="hidden";r.src=i;if(r.readyState||r.complete){r.src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";r.src=i}t.style.backgroundImage="none"}};e.refreshBackground=function(t){var n=e.data(t,"bgsValue"),i=e.data(t,"bgsDim"),s=e.data(t,"bgsImgDim"),o=e(e.data(t,"bgsImg")),u=e.data(t,"bgsPos"),a=e.data(t,"bgsConstrain"),f,l=i.width/i.height,c=s.width/s.height,h;if(n=="contain"){if(c>l){e.data(t,"bgsConstrain",f="width");h=r.floor((i.height-i.width/c)*u[1]);o.css({top:h});if(f!=a){o.css({width:"100%",height:"auto",left:0})}}else{e.data(t,"bgsConstrain",f="height");h=r.floor((i.width-i.height*c)*u[0]);o.css({left:h});if(f!=a){o.css({height:"100%",width:"auto",top:0})}}}else if(n=="cover"){if(c>l){e.data(t,"bgsConstrain",f="height");h=r.floor((i.height*c-i.width)*u[0]);o.css({left:-h});if(f!=a){o.css({height:"100%",width:"auto",top:0})}}else{e.data(t,"bgsConstrain",f="width");h=r.floor((i.width/c-i.height)*u[1]);o.css({top:-h});if(f!=a){o.css({width:"100%",height:"auto",left:0})}}}};var f=e.event,l,c={_:0},h=0,p,d;l=f.special.throttledresize={setup:function(){e(this).on("resize",l.handler)},teardown:function(){e(this).off("resize",l.handler)},handler:function(t,n){var r=this,i=arguments;p=true;if(!d){e(c).animate(c,{duration:Infinity,step:function(){h++;if(h>l.threshold&&p||n){t.type="throttledresize";f.dispatch.apply(r,i);p=false;h=0}if(h>9){e(c).stop();d=false;h=0}}});d=true}},threshold:1};e(t).on("throttledresize",function(){e(u).each(function(){e.refreshBackgroundDimensions(this)})})})(jQuery,window,document,Math);
-
-
-
 /**
  * Aimeos related Javascript code
  *
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2014
+ * @copyright Aimeos (aimeos.org), 2014-2017
  */
 
 
@@ -30,6 +11,7 @@
  * Aimeos common actions
  */
 Aimeos = {
+
 
 	/**
 	 * Creates a floating container over the page displaying the given content node
@@ -97,7 +79,7 @@ Aimeos = {
 		var overlay = $(".aimeos-overlay");
 
 		// remove only if in overlay mode
-		if(container.size() + overlay.size() > 0) {
+		if(container.length + overlay.length > 0) {
 
 			container.remove();
 			overlay.remove();
@@ -121,7 +103,7 @@ Aimeos = {
 	 */
 	loadImages: function() {
 
-		var elements = $(".catalog-list-items .lazy-image, .catalog-list-promo .lazy-image");
+		var elements = $(".aimeos .lazy-image");
 
 		for( var i = 0; i < elements.length; i++) {
 			var element = $(elements[i]);
@@ -336,21 +318,145 @@ AimeosAccountWatch = {
  */
 AimeosBasketMini = {
 
+	WIDTH: '25em',
+
+
+	/**
+	 * Updates the basket mini content using the JSON API
+	 */
+	update: function() {
+
+		$.ajax($(".aimeos.basket-mini[data-jsonurl]").data("jsonurl"), {
+			"method": "OPTIONS",
+			"dataType": "json"
+		}).then(function(options) {
+			$.ajax({
+				dataType: "json",
+				url: options.meta.resources['basket']
+			}).then(function(basket) {
+				AimeosBasketMini.updateBasket(basket);
+			});
+		});
+	},
+
+
+	/**
+	 * Updates the basket mini content
+	 */
+	updateBasket: function(basket) {
+
+		if(!(basket.data && basket.data.attributes)) {
+			return;
+		}
+
+		var attr = basket.data.attributes;
+		var price = Number.parseFloat(attr['order.base.price']);
+		var delivery = Number.parseFloat(attr['order.base.costs']);
+
+		var formatter = new Intl.NumberFormat([], {
+			currency: attr['order.base.currencyid'],
+			style: "currency"
+		});
+
+		$(".aimeos .basket-mini-main .value").html(formatter.format(price + delivery));
+		$(".aimeos .basket-mini-product .total .price").html(formatter.format(price + delivery));
+		$(".aimeos .basket-mini-product .delivery .price").html(formatter.format(delivery));
+
+		if(basket.included) {
+
+			var csrf = '';
+			var count = 0;
+			var body = $(".aimeos .basket-mini-product .basket-body");
+			var prototype = $(".aimeos .basket-mini-product .product.prototype");
+
+			if(basket.meta && basket.meta.csrf) {
+				csrf = basket.meta.csrf.name + '=' + basket.meta.csrf.value;
+			}
+
+			$(".aimeos .basket-mini-product .product").not(".prototype").remove();
+
+			for(var i=0; i<basket.included.length; i++) {
+				var entry = basket.included[i];
+
+				if(entry.type === 'basket/product') {
+					var product = prototype.clone();
+
+					product.data("urldata", csrf);
+					product.data("url", entry.links.self.href);
+
+					$(".name", product).html(entry.attributes['order.base.product.name']);
+					$(".quantity", product).html(entry.attributes['order.base.product.quantity']);
+					$(".price", product).html(formatter.format(entry.attributes['order.base.product.price']));
+
+					body.append(product.removeClass("prototype"));
+
+					count += Number.parseInt(entry.attributes["order.base.product.quantity"]);
+				}
+			}
+
+			$(".aimeos .basket-mini-main .quantity").html(count);
+		}
+	},
+
+
+	/**
+	 * Saves a modifed watched item without page reload
+	 */
+	setupBasketDelete: function() {
+
+		$(".aimeos .basket-mini-product").on("click", ".delete", function(ev) {
+
+			var product = $(this).closest(".product");
+
+			$.ajax(product.data("url"), {
+				"method": "DELETE",
+				"dataType": "json",
+				"data": product.data("urldata")
+			}).then(function(basket) {
+				AimeosBasketMini.updateBasket(basket);
+			});
+
+			return false;
+		});
+	},
+
+
 	/**
 	 * Saves a modifed watched item without page reload
 	 */
 	setupBasketToggle: function() {
 
-		$(".basket-mini-product").on("click", ".minibutton", function(ev) {
+		var width = $(".aimeos.basket-mini").innerWidth();
+
+		$(".aimeos.basket-mini").on("click", ".basket-toggle.toggle-open", function(ev) {
+
 			$(".basket", ev.delegateTarget).toggle();
+			$(".basket", ev.delegateTarget).css("width", width);
+
+			$(ev.delegateTarget).animate({"width": width}, {done: function() {
+				$(ev.currentTarget).removeClass("toggle-open").addClass("toggle-close");
+			}});
+		});
+
+		$(".aimeos.basket-mini").on("click", ".basket-toggle.toggle-close", function(ev) {
+
+			$(ev.delegateTarget).animate({"width": AimeosBasketMini.WIDTH}, {done: function() {
+
+				$(".basket", ev.delegateTarget).toggle();
+				$(".basket", ev.delegateTarget).css("width", AimeosBasketMini.WIDTH);
+
+				$(ev.currentTarget).removeClass("toggle-close").addClass("toggle-open");
+			}});
 		});
 	},
+
 
 	/**
 	 * Initializes the basket mini actions
 	 */
 	init: function() {
 
+		this.setupBasketDelete();
 		this.setupBasketToggle();
 	}
 };
@@ -391,8 +497,7 @@ AimeosBasketStandard = {
 		var basket = $(".basket-standard", doc);
 
 		$(".btn-update", basket).hide();
-		$(".basket-mini-main .value").text($(".basket .total .price", basket).text());
-		$(".basket-mini-main .quantity").text($(".basket .quantity .value", basket).text());
+		AimeosBasketMini.update();
 
 		return basket;
 	},
@@ -500,7 +605,7 @@ AimeosCatalog = {
 	 */
 	setupSelectionDependencies: function() {
 
-		$(".catalog-detail-basket-selection, .catalog-list-items .items-selection").on("change", ".select-list", function(event) {
+		$(".catalog-detail-basket-selection .selection, .catalog-list-items .items-selection .selection").on("change", ".select-list", function(event) {
 
 			var elem = $(this);
 			var index = elem.data("index");
@@ -590,7 +695,7 @@ AimeosCatalog = {
 	 */
 	setupSelectionContent: function() {
 
-		$(".catalog-detail-basket-selection, .catalog-list-items .items-selection").on("change", ".select-list", function(event) {
+		$(".catalog-detail-basket-selection .selection, .catalog-list-items .items-selection .selection").on("change", ".select-list", function(event) {
 
 			var map = {}, len = 0;
 			var attrDeps = $(event.delegateTarget).data("attrdeps") || {}; // {"<attrid>":["prodid",...],...}
@@ -621,24 +726,24 @@ AimeosCatalog = {
 				if( map.hasOwnProperty(prodId) && map[prodId] === len ) {
 
 					var parent = $(this).parents(".catalog-detail-basket, .catalog-list .product");
-					var newPrice = $(".price-prodid-" + prodId, parent);
-					var newStock = $(".stock-prodid-" + prodId, parent);
-
-					if( newPrice.length === 0 ) {
-						newPrice = $(".price-main", parent);
-					}
+					var newStock = $(".stock-list [data-prodid=" + prodId + "]", parent);
+					var newPrice = $(".price-list [data-prodid=" + prodId + "]", parent);
 
 					if( newStock.length === 0 ) {
-						newStock = $(".stockitem:first-child", parent);
+						newStock = $(".stock-list .articleitem:first-child", parent);
 					}
 
-					$(".price", parent).removeClass("price-actual");
-					newPrice.addClass("price-actual");
+					if( newPrice.length === 0 ) {
+						newPrice = $(".price-list .articleitem:first-child", parent);
+					}
 
-					$(".stockitem", parent).removeClass("stock-actual");
+					$(".articleitem", parent).removeClass("stock-actual");
 					newStock.addClass("stock-actual");
 
-					if( parent.data("reqstock") && newStock.hasClass("stock-out") ) {
+					$(".articleitem", parent).removeClass("price-actual");
+					newPrice.addClass("price-actual");
+
+					if( parent.data("reqstock") && $(".stockitem", newStock).hasClass("stock-out") ) {
 						$(".addbasket .btn-action", parent).addClass("btn-disabled").attr("disabled", "disabled");
 					} else {
 						$(".addbasket .btn-action", parent).removeClass("btn-disabled").removeAttr("disabled");
@@ -646,8 +751,8 @@ AimeosCatalog = {
 				}
 			}
 
-			$(".catalog-detail-additional .attributes .subproduct-actual").removeClass("subproduct-actual");
-			$(".catalog-detail-additional .attributes .subproduct-" + prodId).addClass("subproduct-actual");
+			$(".catalog-detail-additional .subproduct-actual").removeClass("subproduct-actual");
+			$(".catalog-detail-additional .subproduct-" + prodId).addClass("subproduct-actual");
 		});
 	},
 
@@ -681,7 +786,7 @@ AimeosCatalog = {
 	 */
 	setupVariantImages: function() {
 
-		$(".catalog-detail-basket-selection, .catalog-list-items .items-selection").on("change", ".select-list", function(event) {
+		$(".catalog-detail-basket-selection .selection, .catalog-list-items .items-selection .selection").on("change", ".select-list", function(event) {
 
 			var elem = $(this);
 			var type = elem.data("type");
@@ -705,12 +810,76 @@ AimeosCatalog = {
 
 		$(".catalog-detail-basket form, .catalog-list-items form").on("submit", function(ev) {
 
-		    Aimeos.createOverlay();
-		    $.post($(this).attr("action"), $(this).serialize(), function(data) {
-		        Aimeos.createContainer(AimeosBasketStandard.updateBasket(data));
-		    });
+			Aimeos.createOverlay();
+			$.post($(this).attr("action"), $(this).serialize(), function(data) {
+				Aimeos.createContainer(AimeosBasketStandard.updateBasket(data));
+			});
 
-		    return false;
+			return false;
+		});
+	},
+
+
+	/**
+	 * Adds a product to the favorite list without page reload
+	 */
+	setupFavoriteAction: function() {
+
+		$(".catalog-actions .actions-button-favorite").on("click", function(ev) {
+
+			Aimeos.createOverlay();
+
+			$.ajax({
+				url: $(this).attr("href"),
+				headers: {
+					"X-Requested-With": "jQuery"
+				}
+			}).done(function(data) {
+
+				var doc = document.createElement("html");
+				doc.innerHTML = data;
+				var content = $(".account-favorite", doc);
+
+				if( content.length > 0 ) {
+					Aimeos.createContainer(content);
+				} else {
+					$("html").replaceWith(doc);
+				}
+			});
+
+			return false;
+		});
+	},
+
+
+	/**
+	 * Adds a product to the watch list without page reload
+	 */
+	setupWatchAction: function() {
+
+		$(".catalog-actions .actions-button-watch").on("click", function(ev) {
+
+			Aimeos.createOverlay();
+
+			$.ajax({
+				url: $(this).attr("href"),
+				headers: {
+					"X-Requested-With": "jQuery"
+				}
+			}).done(function(data) {
+
+				var doc = document.createElement("html");
+				doc.innerHTML = data;
+				var content = $(".account-watch", doc);
+
+				if( content.length > 0 ) {
+					Aimeos.createContainer(content);
+				} else {
+					$("html").replaceWith(doc);
+				}
+			});
+
+			return false;
 		});
 	},
 
@@ -725,14 +894,19 @@ AimeosCatalog = {
 		this.setupVariantImages();
 		this.setupVariantCheck();
 		this.setupBasketAdd();
+		this.setupWatchAction();
+		this.setupFavoriteAction();
 	}
 };
+
 
 
 /**
  * Catalog filter actions
  */
 AimeosCatalogFilter = {
+
+	MIN_INPUT_LEN: 3,
 
 	/**
 	 * Autocompleter for quick search
@@ -741,24 +915,26 @@ AimeosCatalogFilter = {
 
 		var aimeosInputComplete = $(".catalog-filter-search .value");
 
-		aimeosInputComplete.autocomplete({
-			minLength : 3,
-			delay : 200,
-			source : function(req, resp) {
-				var nameTerm = {};
-				nameTerm[aimeosInputComplete.attr("name")] = req.term;
+		if(aimeosInputComplete.length) {
+			aimeosInputComplete.autocomplete({
+				minLength : AimeosCatalogFilter.MIN_INPUT_LEN,
+				delay : 200,
+				source : function(req, resp) {
+					var nameTerm = {};
+					nameTerm[aimeosInputComplete.attr("name")] = req.term;
 
-				$.getJSON(aimeosInputComplete.data("url"), nameTerm, function(data) {
-					resp(data);
-				});
-			},
-			select : function(ev, ui) {
-				aimeosInputComplete.val(ui.item.label);
-				return false;
-			}
-		}).autocomplete("instance")._renderItem = function(ul, item) {
-			return $(item.html).appendTo(ul);
-		};
+					$.getJSON(aimeosInputComplete.data("url"), nameTerm, function(data) {
+						resp(data);
+					});
+				},
+				select : function(ev, ui) {
+					aimeosInputComplete.val(ui.item.label);
+					return false;
+				}
+			}).autocomplete("instance")._renderItem = function(ul, item) {
+				return $(item.html).appendTo(ul);
+			};
+		}
 	},
 
 
@@ -776,7 +952,7 @@ AimeosCatalogFilter = {
 
 				var input = $(this);
 
-				if(input.val() !== '' && input.val().length < 3) {
+				if(input.val() !== '' && input.val().length < AimeosCatalogFilter.MIN_INPUT_LEN) {
 
 					if($(this).has(".search-hint").length === 0) {
 
@@ -1111,7 +1287,7 @@ AimeosCheckoutStandard = {
 			var testfn = function(idx, element) {
 
 				var elem = $(element);
-				var value = elem.find("input,select").val();
+				var value = $("input,select", elem).val();
 
 				if(value === null || value.trim() === "") {
 					elem.addClass("error");
@@ -1122,9 +1298,12 @@ AimeosCheckoutStandard = {
 				}
 			};
 
-			var item = $(".checkout-standard .item-new, .item-service");
-			 // combining in one has() doesn't work
-			item.has(".header,label").has("input:checked").find(".form-list .mandatory").each(testfn);
+			var item = $(".checkout-standard .item-new, .item-service").each(function(node) {
+
+				if($(".header,label input", this).is(":checked")) {
+					$(".form-list .mandatory", this).each(testfn);
+				}
+			});
 
 			$(".checkout-standard-process .form-list .mandatory").each(testfn);
 
@@ -1144,7 +1323,7 @@ AimeosCheckoutStandard = {
 	 */
 	setupPaymentRedirect: function() {
 
-		var form = $("form").first();
+		var form = $(".checkout-standard form").first();
 		var node = $(".checkout-standard-process", form);
 
 		if(node.length > 0 && node.has(".mandatory").length === 0 && node.has(".optional").length === 0 && form.attr("action") !== '' ) {
@@ -1227,6 +1406,12 @@ document.createElement("section");
 document.createElement("article");
 
 
+/*
+ * Disable CSS rules only necessary if no Javascript is available
+ */
+$("html").removeClass("no-js");
+
+
 Aimeos.loadImages();
 
 
@@ -1239,8 +1424,8 @@ jQuery(document).ready(function($) {
 
 	/* Lazy product image loading in list view */
 	Aimeos.loadImages();
-	$(window).bind("resize", Aimeos.loadImages);
-	$(window).bind("scroll", Aimeos.loadImages);
+	$(window).on("resize", Aimeos.loadImages);
+	$(window).on("scroll", Aimeos.loadImages);
 
 
 	Aimeos.init();

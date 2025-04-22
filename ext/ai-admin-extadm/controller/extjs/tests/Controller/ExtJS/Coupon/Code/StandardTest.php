@@ -4,11 +4,11 @@ namespace Aimeos\Controller\ExtJS\Coupon\Code;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -28,7 +28,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->testdir = $this->context->getConfig()->get( 'controller/extjs/coupon/code/standard/uploaddir', './tmp' );
 
 		if( !is_dir( $this->testdir ) && mkdir( $this->testdir, 0775, true ) === false ) {
-			throw new \Exception( sprintf( 'Unable to create missing upload directory "%1$s"', $this->testdir ) );
+			throw new \RuntimeException( sprintf( 'Unable to create missing upload directory "%1$s"', $this->testdir ) );
 		}
 
 		$this->object = new \Aimeos\Controller\ExtJS\Coupon\Code\Standard( $this->context );
@@ -79,7 +79,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $couponManager->searchItems( $search );
 
 		if( ( $couponItem = reset( $result ) ) === false ) {
-			throw new \Exception( 'No coupon item found' );
+			throw new \RuntimeException( 'No coupon item found' );
 		}
 
 		$saveParams = (object) array(
@@ -127,116 +127,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$expected = array( 'success' => true );
 		$actual = $this->object->finish( new \stdClass() );
-		$this->assertEquals( $expected, $actual );
-	}
-
-
-	public function testAbstractGetItemSchema()
-	{
-		$actual = $this->object->getItemSchema();
-		$expected = array(
-			'name' => 'Coupon_Code',
-			'properties' => array(
-				'coupon.code.id' => array(
-					'description' => 'Coupon code ID',
-					'optional' => false,
-					'type' => 'integer',
-				),
-				'coupon.code.siteid' => array(
-					'description' => 'Coupon code site ID',
-					'optional' => false,
-					'type' => 'integer',
-				),
-				'coupon.code.parentid' => array(
-					'description' => 'Coupon ID',
-					'optional' => false,
-					'type' => 'integer',
-				),
-				'coupon.code.code' => array(
-					'description' => 'Coupon code value',
-					'optional' => false,
-					'type' => 'string',
-				),
-				'coupon.code.count' => array(
-					'description' => 'Coupon code quantity',
-					'optional' => false,
-					'type' => 'string',
-				),
-				'coupon.code.datestart' => array(
-					'description' => 'Coupon code start date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.dateend' => array(
-					'description' => 'Coupon code end date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.ctime' => array(
-					'description' => 'Coupon code create date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.mtime' => array(
-					'description' => 'Coupon code modification date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.editor' => array(
-					'description' => 'Coupon code editor',
-					'optional' => false,
-					'type' => 'string',
-				),
-			)
-		);
-
-		$this->assertEquals( $expected, $actual );
-	}
-
-
-	public function testAbstractGetSearchSchema()
-	{
-		$actual = $this->object->getSearchSchema();
-		$expected = array(
-			'criteria' => array(
-				'coupon.code.code' => array(
-					'description' => 'Coupon code value',
-					'optional' => false,
-					'type' => 'string',
-				),
-				'coupon.code.count' => array(
-					'description' => 'Coupon code quantity',
-					'optional' => false,
-					'type' => 'string',
-				),
-				'coupon.code.datestart' => array(
-					'description' => 'Coupon code start date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.dateend' => array(
-					'description' => 'Coupon code end date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.ctime' => array(
-					'description' => 'Coupon code create date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.mtime' => array(
-					'description' => 'Coupon code modification date/time',
-					'optional' => false,
-					'type' => 'datetime',
-				),
-				'coupon.code.editor' => array(
-					'description' => 'Coupon code editor',
-					'optional' => false,
-					'type' => 'string',
-				),
-			)
-		);
-
 		$this->assertEquals( $expected, $actual );
 	}
 
@@ -296,7 +186,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$params->items = basename( $this->testdir . DIRECTORY_SEPARATOR . 'coupon.zip' );
 		$params->site = 'unittest';
 
-		$_FILES = array();
+		$_FILES = [];
 
 		$this->setExpectedException( '\\Aimeos\\Controller\\ExtJS\\Exception' );
 		$this->object->uploadFile( $params );

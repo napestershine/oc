@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -57,28 +57,6 @@ class Standard
 	 */
 	private $subPartPath = 'client/html/catalog/stage/standard/subparts';
 
-	/** client/html/catalog/stage/image/name
-	 * Name of the image part used by the catalog stage client implementation
-	 *
-	 * Use "Myname" if your class is named "\Aimeos\Client\Html\Catalog\Stage\Image\Myname".
-	 * The name is case-sensitive and you should avoid camel case names like "MyName".
-	 *
-	 * @param string Last part of the client class name
-	 * @since 2014.03
-	 * @category Developer
-	 */
-
-	/** client/html/catalog/stage/breadcrumb/name
-	 * Name of the breadcrumb part used by the catalog stage client implementation
-	 *
-	 * Use "Myname" if your class is named "\Aimeos\Client\Html\Catalog\Stage\Breadcrumb\Myname".
-	 * The name is case-sensitive and you should avoid camel case names like "MyName".
-	 *
-	 * @param string Last part of the client class name
-	 * @since 2014.03
-	 * @category Developer
-	 */
-
 	/** client/html/catalog/stage/navigator/name
 	 * Name of the navigator part used by the catalog stage client implementation
 	 *
@@ -89,9 +67,9 @@ class Standard
 	 * @since 2014.09
 	 * @category Developer
 	 */
-	private $subPartNames = array( 'image', 'breadcrumb', 'navigator' );
+	private $subPartNames = array( 'navigator' );
 
-	private $tags = array();
+	private $tags = [];
 	private $expire;
 	private $cache;
 
@@ -104,7 +82,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$prefixes = array( 'f' );
 		$context = $this->getContext();
@@ -138,24 +116,24 @@ class Standard
 			catch( \Aimeos\Client\Html\Exception $e )
 			{
 				$error = array( $context->getI18n()->dt( 'client', $e->getMessage() ) );
-				$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+				$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 			}
 			catch( \Aimeos\Controller\Frontend\Exception $e )
 			{
 				$error = array( $context->getI18n()->dt( 'controller/frontend', $e->getMessage() ) );
-				$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+				$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 			}
 			catch( \Aimeos\MShop\Exception $e )
 			{
 				$error = array( $context->getI18n()->dt( 'mshop', $e->getMessage() ) );
-				$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+				$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 			}
 			catch( \Exception $e )
 			{
 				$context->getLogger()->log( $e->getMessage() . PHP_EOL . $e->getTraceAsString() );
 
 				$error = array( $context->getI18n()->dt( 'client', 'A non-recoverable error occured' ) );
-				$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+				$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 			}
 
 			/** client/html/catalog/stage/standard/template-body
@@ -202,7 +180,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string String including HTML tags for the header on error
 	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
+	public function getHeader( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$prefixes = array( 'f' );
 		$context = $this->getContext();
@@ -367,17 +345,17 @@ class Standard
 		catch( \Aimeos\Client\Html\Exception $e )
 		{
 			$error = array( $this->getContext()->getI18n()->dt( 'client', $e->getMessage() ) );
-			$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+			$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 		}
 		catch( \Aimeos\Controller\Frontend\Exception $e )
 		{
 			$error = array( $this->getContext()->getI18n()->dt( 'controller/frontend', $e->getMessage() ) );
-			$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+			$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 		}
 		catch( \Aimeos\MShop\Exception $e )
 		{
 			$error = array( $this->getContext()->getI18n()->dt( 'mshop', $e->getMessage() ) );
-			$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+			$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 		}
 		catch( \Exception $e )
 		{
@@ -385,7 +363,7 @@ class Standard
 			$context->getLogger()->log( $e->getMessage() . PHP_EOL . $e->getTraceAsString() );
 
 			$error = array( $context->getI18n()->dt( 'client', 'A non-recoverable error occured' ) );
-			$view->stageErrorList = $view->get( 'stageErrorList', array() ) + $error;
+			$view->stageErrorList = $view->get( 'stageErrorList', [] ) + $error;
 		}
 	}
 
@@ -399,11 +377,11 @@ class Standard
 	 */
 	protected function getClientParams( array $params, array $prefixes = array( 'f', 'l', 'd', 'a' ) )
 	{
-		if( isset( $params['l_pos'] ) && isset( $params['d_prodid'] ) )
+		if( isset( $params['d_prodid'] ) )
 		{
 			$context = $this->getContext();
 			$site = $context->getLocale()->getSite()->getCode();
-			$params += (array) $context->getSession()->get( 'aimeos/catalog/lists/params/last/' . $site, array() );
+			$params += (array) $context->getSession()->get( 'aimeos/catalog/lists/params/last/' . $site, [] );
 		}
 
 		return parent::getClientParams( $params, $prefixes );
@@ -429,17 +407,22 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return \Aimeos\MW\View\Iface Modified view object
 	 */
-	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = array(), &$expire = null )
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
 	{
 		if( !isset( $this->cache ) )
 		{
-			$params = $this->getClientParams( $view->param(), array( 'f', 'l' ) );
-			unset( $params['l_pos'] ); // @todo Rename to d_pos
+			$context = $this->getContext();
+			$config = $context->getConfig();
 
-			if( isset( $params['f_catid'] ) && $params['f_catid'] != '' )
+			$params = $this->getClientParams( $view->param(), array( 'f', 'l' ) );
+			$catid = ( isset( $params['f_catid'] ) ? (string) $params['f_catid'] : '' );
+
+			if( $catid == '' ) {
+				$catid = $config->get( 'client/html/catalog/lists/catid-default', '' );
+			}
+
+			if( $catid != '' )
 			{
-				$context = $this->getContext();
-				$config = $context->getConfig();
 				$controller = \Aimeos\Controller\Frontend\Factory::createController( $context, 'catalog' );
 
 				$default = array( 'attribute', 'media', 'text' );
@@ -473,16 +456,16 @@ class Standard
 				 * @see client/html/catalog/lists/domains
 				 */
 				$domains = $config->get( 'client/html/catalog/stage/standard/domains', $domains );
-				$stageCatPath = $controller->getCatalogPath( $params['f_catid'], $domains );
+				$stageCatPath = $controller->getPath( $catid, $domains );
 
 				if( ( $categoryItem = end( $stageCatPath ) ) !== false ) {
 					$view->stageCurrentCatItem = $categoryItem;
 				}
 
-				$this->addMetaItem( $stageCatPath, 'catalog', $this->expire, $this->tags );
-				$this->addMetaList( array_keys( $stageCatPath ), 'catalog', $this->expire );
+				$this->addMetaItems( $stageCatPath, $this->expire, $this->tags );
 
 				$view->stageCatPath = $stageCatPath;
+				$view->stageCatId = $catid;
 			}
 
 			$view->stageParams = $params;

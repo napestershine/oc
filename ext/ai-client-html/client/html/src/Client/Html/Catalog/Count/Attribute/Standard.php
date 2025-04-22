@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -56,7 +56,7 @@ class Standard
 	 * @category Developer
 	 */
 	private $subPartPath = 'client/html/catalog/count/attribute/standard/subparts';
-	private $subPartNames = array();
+	private $subPartNames = [];
 	private $cache;
 
 
@@ -68,7 +68,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$view = $this->setViewParams( $this->getView(), $tags, $expire );
 
@@ -100,52 +100,6 @@ class Standard
 		 */
 		$tplconf = 'client/html/catalog/count/attribute/standard/template-body';
 		$default = 'catalog/count/attribute-body-default.php';
-
-		return $view->render( $view->config( $tplconf, $default ) );
-	}
-
-
-	/**
-	 * Returns the HTML string for insertion into the header.
-	 *
-	 * @param string $uid Unique identifier for the output if the content is placed more than once on the same page
-	 * @param array &$tags Result array for the list of tags that are associated to the output
-	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
-	 * @return string|null String including HTML tags for the header on error
-	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
-	{
-		$view = $this->setViewParams( $this->getView(), $tags, $expire );
-
-		$html = '';
-		foreach( $this->getSubClients() as $subclient ) {
-			$html .= $subclient->setView( $view )->getHeader( $uid, $tags, $expire );
-		}
-		$view->attributeHeader = $html;
-
-		/** client/html/catalog/count/attribute/standard/template-header
-		 * Relative path to the HTML header template of the catalog count attribute client.
-		 *
-		 * The template file contains the HTML code and processing instructions
-		 * to generate the HTML code that is inserted into the HTML page header
-		 * of the rendered page in the frontend. The configuration string is the
-		 * path to the template file relative to the templates directory (usually
-		 * in client/html/templates).
-		 *
-		 * You can overwrite the template file configuration in extensions and
-		 * provide alternative templates. These alternative templates should be
-		 * named like the default one but with the string "standard" replaced by
-		 * an unique name. You may use the name of your project for this. If
-		 * you've implemented an alternative client class as well, "standard"
-		 * should be replaced by the name of the new class.
-		 *
-		 * @param string Relative path to the template creating code for the HTML page head
-		 * @since 2014.03
-		 * @category Developer
-		 * @see client/html/catalog/count/attribute/standard/template-body
-		 */
-		$tplconf = 'client/html/catalog/count/attribute/standard/template-header';
-		$default = 'catalog/count/attribute-header-default.php';
 
 		return $view->render( $view->config( $tplconf, $default ) );
 	}
@@ -257,7 +211,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return \Aimeos\MW\View\Iface Modified view object
 	 */
-	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = array(), &$expire = null )
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
 	{
 		if( !isset( $this->cache ) )
 		{
@@ -305,10 +259,10 @@ class Standard
 				 * @category User
 				 */
 				$filter->setSlice( 0, $config->get( 'client/html/catalog/count/limit', 10000 ) );
-				$filter->setSortations( array() ); // it's not necessary and slows down the query
+				$filter->setSortations( [] ); // it's not necessary and slows down the query
 
-				$controller = \Aimeos\Controller\Frontend\Factory::createController( $context, 'catalog' );
-				$view->attributeCountList = $controller->aggregateIndex( $filter, 'index.attribute.id' );
+				$controller = \Aimeos\Controller\Frontend\Factory::createController( $context, 'product' );
+				$view->attributeCountList = $controller->aggregate( $filter, 'index.attribute.id' );
 			}
 
 			$this->cache = $view;

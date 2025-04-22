@@ -2,31 +2,26 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2017
  */
 
 $enc = $this->encoder();
 
+$optTarget = $this->config( 'client/jsonapi/url/target' );
+$optCntl = $this->config( 'client/jsonapi/url/controller', 'jsonapi' );
+$optAction = $this->config( 'client/jsonapi/url/action', 'options' );
+$optConfig = $this->config( 'client/jsonapi/url/config', [] );
+
+
 ?>
-<?php $this->block()->start( 'account/profile' ); ?>
-<section class="aimeos account-profile">
+<section class="aimeos account-profile" data-jsonurl="<?= $enc->attr( $this->url( $optTarget, $optCntl, $optAction, [], [], $optConfig ) ); ?>">
 
-	<?php if( ( $errors = $this->get( 'profileErrorList', array() ) ) !== array() ) : ?>
-
-	<ul class="error-list">
-
-		<?php foreach( $errors as $error ) : ?>
-
-		<li class="error-item"><?php echo $enc->html( $error ); ?></li>
-
-		<?php endforeach; ?>
-
-	</ul>
-
+	<?php if( ( $errors = $this->get( 'profileErrorList', [] ) ) !== [] ) : ?>
+		<ul class="error-list">
+			<?php foreach( $errors as $error ) : ?>
+				<li class="error-item"><?= $enc->html( $error ); ?></li>
+			<?php endforeach; ?>
+		</ul>
 	<?php endif; ?>
 
-	<?php echo $this->get( 'profileBody' ); ?>
-
 </section>
-<?php $this->block()->stop(); ?>
-<?php echo $this->block()->get( 'account/profile' ); ?>

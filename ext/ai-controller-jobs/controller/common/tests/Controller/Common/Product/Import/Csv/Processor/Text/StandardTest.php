@@ -5,9 +5,9 @@ namespace Aimeos\Controller\Common\Product\Import\Csv\Processor\Text;
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $context;
 	private $endpoint;
@@ -24,7 +24,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		\Aimeos\MShop\Factory::setCache( true );
 
 		$this->context = \TestHelperCntl::getContext();
-		$this->endpoint = new \Aimeos\Controller\Common\Product\Import\Csv\Processor\Done( $this->context, array() );
+		$this->endpoint = new \Aimeos\Controller\Common\Product\Import\Csv\Processor\Done( $this->context, [] );
 	}
 
 
@@ -204,8 +204,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$product = $this->get( 'job_csv_test' );
 
-		$object = new \Aimeos\Controller\Common\Product\Import\Csv\Processor\Text\Standard( $this->context, array(), $this->endpoint );
-		$object->process( $product, array() );
+		$object = new \Aimeos\Controller\Common\Product\Import\Csv\Processor\Text\Standard( $this->context, [], $this->endpoint );
+		$object->process( $product, [] );
 
 		$product = $this->get( 'job_csv_test' );
 		$this->delete( $product );
@@ -304,16 +304,14 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$typeResult = $typeManager->searchItems( $typeSearch );
 
 		if( ( $typeItem = reset( $typeResult ) ) === false ) {
-			throw new \Exception( 'No product type "default" found' );
+			throw new \RuntimeException( 'No product type "default" found' );
 		}
 
 		$item = $manager->createItem();
 		$item->setTypeid( $typeItem->getId() );
 		$item->setCode( $code );
 
-		$manager->saveItem( $item );
-
-		return $item;
+		return $manager->saveItem( $item );
 	}
 
 
@@ -346,7 +344,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $manager->searchItems( $search, array('text') );
 
 		if( ( $item = reset( $result ) ) === false ) {
-			throw new \Exception( sprintf( 'No product item for code "%1$s"', $code ) );
+			throw new \RuntimeException( sprintf( 'No product item for code "%1$s"', $code ) );
 		}
 
 		return $item;

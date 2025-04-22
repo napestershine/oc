@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -56,30 +56,7 @@ class Standard
 	 * @category Developer
 	 */
 	private $subPartPath = 'client/html/basket/mini/standard/subparts';
-
-	/** client/html/basket/mini/main/name
-	 * Name of the main part used by the basket mini client implementation
-	 *
-	 * Use "Myname" if your class is named "\Aimeos\Client\Html\Basket\Mini\Main\Myname".
-	 * The name is case-sensitive and you should avoid camel case names like "MyName".
-	 *
-	 * @param string Last part of the client class name
-	 * @since 2014.03
-	 * @category Developer
-	 */
-
-	/** client/html/basket/mini/product/name
-	 * Name of the product part used by the basket mini client implementation
-	 *
-	 * Use "Myname" if your class is named "\Aimeos\Client\Html\Basket\Mini\Product\Myname".
-	 * The name is case-sensitive and you should avoid camel case names like "MyName".
-	 *
-	 * @param string Last part of the client class name
-	 * @since 2015.09
-	 * @category Developer
-	 */
-	private $subPartNames = array( 'main', 'product' );
-
+	private $subPartNames = [];
 	private $cache;
 
 
@@ -91,7 +68,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$context = $this->getContext();
 		$site = $context->getLocale()->getSiteId();
@@ -107,8 +84,8 @@ class Standard
 		 * @category Developer
 		 * @see client/html/basket#mini
 		 */
-		$config = $context->getConfig()->get( 'client/html/basket/mini', array() );
-		$key = $this->getParamHash( array(), $uid . $site . ':basket:mini-body', $config );
+		$config = $context->getConfig()->get( 'client/html/basket/mini', [] );
+		$key = $this->getParamHash( [], $uid . $site . ':basket:mini-body', $config );
 
 		if( ( $html = $this->getBasketCached( $key ) ) === null )
 		{
@@ -125,24 +102,24 @@ class Standard
 			catch( \Aimeos\Client\Html\Exception $e )
 			{
 				$error = array( $context->getI18n()->dt( 'client', $e->getMessage() ) );
-				$view->miniErrorList = $view->get( 'miniErrorList', array() ) + $error;
+				$view->miniErrorList = $view->get( 'miniErrorList', [] ) + $error;
 			}
 			catch( \Aimeos\Controller\Frontend\Exception $e )
 			{
 				$error = array( $context->getI18n()->dt( 'controller/frontend', $e->getMessage() ) );
-				$view->miniErrorList = $view->get( 'miniErrorList', array() ) + $error;
+				$view->miniErrorList = $view->get( 'miniErrorList', [] ) + $error;
 			}
 			catch( \Aimeos\MShop\Exception $e )
 			{
 				$error = array( $context->getI18n()->dt( 'mshop', $e->getMessage() ) );
-				$view->miniErrorList = $view->get( 'miniErrorList', array() ) + $error;
+				$view->miniErrorList = $view->get( 'miniErrorList', [] ) + $error;
 			}
 			catch( \Exception $e )
 			{
 				$context->getLogger()->log( $e->getMessage() . PHP_EOL . $e->getTraceAsString() );
 
 				$error = array( $context->getI18n()->dt( 'client', 'A non-recoverable error occured' ) );
-				$view->miniErrorList = $view->get( 'miniErrorList', array() ) + $error;
+				$view->miniErrorList = $view->get( 'miniErrorList', [] ) + $error;
 			}
 
 			/** client/html/basket/mini/standard/template-body
@@ -188,14 +165,14 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string|null String including HTML tags for the header on error
 	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
+	public function getHeader( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$context = $this->getContext();
 		$site = $context->getLocale()->getSiteId();
 		$view = $this->getView();
 
-		$config = $context->getConfig()->get( 'client/html/basket/mini', array() );
-		$key = $this->getParamHash( array(), $uid . $site . ':basket:mini-header', $config );
+		$config = $context->getConfig()->get( 'client/html/basket/mini', [] );
+		$key = $this->getParamHash( [], $uid . $site . ':basket:mini-header', $config );
 
 		if( ( $html = $this->getBasketCached( $key ) ) === null )
 		{
@@ -356,7 +333,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return \Aimeos\MW\View\Iface Modified view object
 	 */
-	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = array(), &$expire = null )
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
 	{
 		if( !isset( $this->cache ) )
 		{

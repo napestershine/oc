@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Controller
  * @subpackage Common
  */
@@ -100,15 +100,15 @@ class Standard
 
 		try
 		{
-			$types = array();
+			$types = [];
 
-			foreach( $this->getMappedChunk( $data ) as $list )
+			foreach( $this->getMappedChunk( $data, $this->getMapping() ) as $list )
 			{
 				if( $this->checkEntry( $list ) === false ) {
 					continue;
 				}
 
-				$listMap = array();
+				$listMap = [];
 				$type = ( isset( $list['product.lists.type'] ) ? $list['product.lists.type'] : 'default' );
 				$types[] = $type;
 
@@ -128,7 +128,7 @@ class Standard
 
 			$this->deleteListItems( $product->getId(), $types );
 
-			$remaining = $this->getObject()->process( $product, $data );
+			$data = $this->getObject()->process( $product, $data );
 
 			$manager->commit();
 		}
@@ -138,7 +138,7 @@ class Standard
 			throw $e;
 		}
 
-		return $remaining;
+		return $data;
 	}
 
 

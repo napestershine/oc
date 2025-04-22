@@ -2,13 +2,16 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Admin
- * @subpackage ExtJS
+ * @subpackage JsonAdm
  */
 
 
 namespace Aimeos\Admin\JsonAdm\Common\Decorator;
+
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 
 /**
@@ -31,7 +34,7 @@ abstract class Base
 	 * @param \Aimeos\MShop\Context\Item\Iface $context Context object with required objects
 	 * @param \Aimeos\MW\View\Iface $view View object
 	 * @param array $templatePaths List of file system paths where the templates are stored
-	 * @param string $path Name of the client separated by slashes, e.g "product/stock"
+	 * @param string $path Name of the client separated by slashes, e.g "product/property"
 	 */
 	public function __construct( \Aimeos\Admin\JsonAdm\Iface $client,
 		\Aimeos\MShop\Context\Item\Iface $context, \Aimeos\MW\View\Iface $view, array $templatePaths, $path )
@@ -52,39 +55,33 @@ abstract class Base
 	 */
 	public function __call( $name, array $param )
 	{
-		if( ( $result = call_user_func_array( array( $this->client, $name ), $param ) ) === false ) {
-			throw new \Aimeos\Admin\JsonAdm\Exception( sprintf( 'Unable to call method "%1$s"', $name ) );
-		}
-
-		return $result;
+		return @call_user_func_array( array( $this->client, $name ), $param );
 	}
 
 
 	/**
 	 * Deletes the resource or the resource list
 	 *
-	 * @param string $body Request body
-	 * @param array &$header Variable which contains the HTTP headers and the new ones afterwards
-	 * @param integer &$status Variable which contains the HTTP status afterwards
-	 * @return string Content for response body
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	public function delete( $body, array &$header, &$status )
+	public function delete( ServerRequestInterface $request, ResponseInterface $response )
 	{
-		return $this->client->delete( $body, $header, $status );
+		return $this->client->delete( $request, $response );
 	}
 
 
 	/**
 	 * Returns the requested resource or the resource list
 	 *
-	 * @param string $body Request body
-	 * @param array &$header Variable which contains the HTTP headers and the new ones afterwards
-	 * @param integer &$status Variable which contains the HTTP status afterwards
-	 * @return string Content for response body
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	public function get( $body, array &$header, &$status )
+	public function get( ServerRequestInterface $request, ResponseInterface $response )
 	{
-		return $this->client->get( $body, $header, $status );
+		return $this->client->get( $request, $response );
 	}
 
 
@@ -92,14 +89,13 @@ abstract class Base
 	/**
 	 * Updates the resource or the resource list partitially
 	 *
-	 * @param string $body Request body
-	 * @param array &$header Variable which contains the HTTP headers and the new ones afterwards
-	 * @param integer &$status Variable which contains the HTTP status afterwards
-	 * @return string Content for response body
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	public function patch( $body, array &$header, &$status )
+	public function patch( ServerRequestInterface $request, ResponseInterface $response )
 	{
-		return $this->client->patch( $body, $header, $status );
+		return $this->client->patch( $request, $response );
 	}
 
 
@@ -107,14 +103,13 @@ abstract class Base
 	/**
 	 * Creates or updates the resource or the resource list
 	 *
-	 * @param string $body Request body
-	 * @param array &$header Variable which contains the HTTP headers and the new ones afterwards
-	 * @param integer &$status Variable which contains the HTTP status afterwards
-	 * @return string Content for response body
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	public function post( $body, array &$header, &$status )
+	public function post( ServerRequestInterface $request, ResponseInterface $response )
 	{
-		return $this->client->post( $body, $header, $status );
+		return $this->client->post( $request, $response );
 	}
 
 
@@ -122,14 +117,13 @@ abstract class Base
 	/**
 	 * Creates or updates the resource or the resource list
 	 *
-	 * @param string $body Request body
-	 * @param array &$header Variable which contains the HTTP headers and the new ones afterwards
-	 * @param integer &$status Variable which contains the HTTP status afterwards
-	 * @return string Content for response body
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	public function put( $body, array &$header, &$status )
+	public function put( ServerRequestInterface $request, ResponseInterface $response )
 	{
-		return $this->client->put( $body, $header, $status );
+		return $this->client->put( $request, $response );
 	}
 
 
@@ -137,13 +131,24 @@ abstract class Base
 	/**
 	 * Returns the available REST verbs
 	 *
-	 * @param string $body Request body
-	 * @param array &$header Variable which contains the HTTP headers and the new ones afterwards
-	 * @param integer &$status Variable which contains the HTTP status afterwards
-	 * @return string Content for response body
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @param string|null $prefix Form parameter prefix when nesting parameters is required
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	public function options( $body, array &$header, &$status )
+	public function options( ServerRequestInterface $request, ResponseInterface $response, $prefix = null )
 	{
-		return $this->client->options( $body, $header, $status );
+		return $this->client->options( $request, $response, $prefix );
+	}
+
+
+	/**
+	 * Returns the underlying admin client object;
+	 *
+	 * @return \Aimeos\Admin\JsonAdm\Iface Admin client object
+	 */
+	protected function getClient()
+	{
+		return $this->client;
 	}
 }

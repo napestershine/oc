@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -56,7 +56,7 @@ class Standard
 	 * @category Developer
 	 */
 	private $subPartPath = 'client/html/catalog/stock/standard/subparts';
-	private $subPartNames = array();
+	private $subPartNames = [];
 	private $cache;
 
 
@@ -68,7 +68,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
 		try
 		{
@@ -120,7 +120,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string|null String including HTML tags for the header on error
 	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
+	public function getHeader( $uid = '', array &$tags = [], &$expire = null )
 	{
 		try
 		{
@@ -289,88 +289,80 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return \Aimeos\MW\View\Iface Modified view object
 	 */
-	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = array(), &$expire = null )
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
 	{
 		if( !isset( $this->cache ) )
 		{
-			$context = $this->getContext();
-			$siteConfig = $context->getLocale()->getSite()->getConfig();
+			$stockItemsByProducts = [];
+			$productCodes = (array) $view->param( 's_prodcode', [] );
 
-			/** client/html/catalog/stock/sort
-			 * Sortation key if stock levels for different warehouses exist
-			 *
-			 * Products can be shipped from several warehouses with a different
-			 * stock level for each one. The stock levels for each warehouse will
-			 * be shown in the product detail page. To get a consistent sortation
-			 * of this list, the configured key of the product warehouse manager
-			 * will be used.
-			 *
-			 * @param string Key for sorting
-			 * @since 2014.03
-			 * @category Developer
-			 * @see client/html/catalog/stock/level/low
-			 */
-			$sortkey = $context->getConfig()->get( 'client/html/catalog/stock/sort', 'product.stock.warehouseid' );
-			$productIds = $view->param( 's_prodid' );
-
-			if( !is_array( $productIds ) ) {
-				$productIds = explode( ' ', $productIds );
+			foreach( $this->getStockItems( $productCodes ) as $stockItem ){
+				$stockItemsByProducts[ $stockItem->getProductCode() ][] = $stockItem;
 			}
 
-
-			$stockManager = \Aimeos\MShop\Factory::createManager( $context, 'product/stock' );
-
-			$search = $stockManager->createSearch( true );
-			$expr = array( $search->compare( '==', 'product.stock.parentid', $productIds ) );
-
-			if( isset( $siteConfig['warehouse'] ) ) {
-				$expr[] = $search->compare( '==', 'product.stock.warehouse.code', $siteConfig['warehouse'] );
-			}
-
-			$expr[] = $search->getConditions();
-
-			$sortations = array(
-				$search->sort( '+', 'product.stock.parentid' ),
-				$search->sort( '+', $sortkey ),
-			);
-
-			$search->setConditions( $search->combine( '&&', $expr ) );
-			$search->setSortations( $sortations );
-			$search->setSlice( 0, 0x7fffffff );
-
-			$stockItems = $stockManager->searchItems( $search );
-
-
-			if( !empty( $stockItems ) )
-			{
-				$warehouseIds = $stockItemsByProducts = array();
-
-				foreach( $stockItems as $item )
-				{
-					$warehouseIds[$item->getWarehouseId()] = null;
-					$stockItemsByProducts[$item->getParentId()][] = $item;
-				}
-
-				$warehouseIds = array_keys( $warehouseIds );
-
-
-				$warehouseManager = \Aimeos\MShop\Factory::createManager( $context, 'product/stock/warehouse' );
-
-				$search = $warehouseManager->createSearch();
-				$search->setConditions( $search->compare( '==', 'product.stock.warehouse.id', $warehouseIds ) );
-				$search->setSlice( 0, count( $warehouseIds ) );
-
-
-				$view->stockWarehouseItems = $warehouseManager->searchItems( $search );
-				$view->stockItemsByProducts = $stockItemsByProducts;
-			}
-
-
-			$view->stockProductIds = $productIds;
+			$view->stockItemsByProducts = $stockItemsByProducts;
+			$view->stockProductCodes = $productCodes;
 
 			$this->cache = $view;
 		}
 
 		return $this->cache;
+	}
+
+
+	/**
+	 * Returns the list of stock items for the given product codes and the stock type
+	 *
+	 * @param array $productCodes List of product codes
+	 * @return \Aimeos\MShop\Stock\Item\Iface[] Associative list stock IDs as keys and stock items as values
+	 */
+	protected function getStockItems( array $productCodes )
+	{
+		$context = $this->getContext();
+
+		/** client/html/catalog/stock/sort
+		 * Sortation keys if stock levels for different types exist
+		 *
+		 * Products can be shipped from several warehouses with a different
+		 * stock level for each one. The stock levels for each warehouse will
+		 * be shown in the product detail page. To get a consistent sortation
+		 * of this list, the configured keys will be used by the stock manager.
+		 *
+		 * The list consists of the sort key and the direction
+		 * (+: ascending, -: descending):
+		 *  array(
+		 *      'stock.productcode' => '+',
+		 *      'stock.stocklevel' => '-',
+		 *      'stock.type.code' => '+',
+		 *      'stock.dateback' => '+',
+		 *  )
+		 *
+		 * @param array List of key/value pairs for sorting
+		 * @since 2017.01
+		 * @category Developer
+		 * @see client/html/catalog/stock/level/low
+		 */
+		$default = array( 'stock.productcode' => '+', 'stock.type.code' => '+' );
+		$sortKeys = $context->getConfig()->get( 'client/html/catalog/stock/sort', $default );
+
+		$siteConfig = $context->getLocale()->getSite()->getConfig();
+		$cntl = \Aimeos\Controller\Frontend\Factory::createController( $context, 'stock' );
+
+		$filter = $cntl->createFilter();
+		$filter = $cntl->addFilterCodes( $filter, $productCodes );
+
+		if( isset( $siteConfig['stocktype'] ) ) {
+			$filter = $cntl->addFilterTypes( $filter, [$siteConfig['stocktype']] );
+		}
+
+		$sortations = [];
+		foreach( $sortKeys as $key => $dir ) {
+			$sortations[] = $filter->sort( $dir, $key );
+		}
+
+		$filter->setSortations( $sortations );
+		$filter->setSlice( 0, 0x7fffffff );
+
+		return $cntl->searchItems( $filter );
 	}
 }

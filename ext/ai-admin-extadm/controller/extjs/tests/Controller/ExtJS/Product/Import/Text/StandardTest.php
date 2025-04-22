@@ -4,11 +4,11 @@ namespace Aimeos\Controller\ExtJS\Product\Import\Text;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $testdir;
@@ -30,7 +30,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->testfile = $this->testdir . DIRECTORY_SEPARATOR . 'file.txt';
 
 		if( !is_dir( $this->testdir ) && mkdir( $this->testdir, 0775, true ) === false ) {
-			throw new \Exception( sprintf( 'Unable to create missing upload directory "%1$s"', $this->testdir ) );
+			throw new \RuntimeException( sprintf( 'Unable to create missing upload directory "%1$s"', $this->testdir ) );
 		}
 
 		$this->object = new \Aimeos\Controller\ExtJS\Product\Import\Text\Standard( $this->context );
@@ -60,7 +60,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testImportFromCSVFile()
 	{
-		$data = array();
+		$data = [];
 		$data[] = '"Language ID","Type","Code","List type","Text type","Text ID","Text"' . "\n";
 		$data[] = '"en","product","ABCD","default","long","","ABCD: long"' . "\n";
 		$data[] = '"en","product","ABCD","default","meta-description","","ABCD: meta desc"' . "\n";
@@ -75,7 +75,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$filename = PATH_TESTS . $ds . 'tmp' . $ds . 'product-import.zip';
 
 		if( file_put_contents( PATH_TESTS . $ds . 'tmp' . $ds . $csv, implode( '', $data ) ) === false ) {
-			throw new \Exception( sprintf( 'Unable to write test file "%1$s"', $csv ) );
+			throw new \RuntimeException( sprintf( 'Unable to write test file "%1$s"', $csv ) );
 		}
 
 		$zip = new \ZipArchive();
@@ -84,7 +84,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$zip->close();
 
 		if( unlink( PATH_TESTS . $ds . 'tmp' . $ds . $csv ) === false ) {
-			throw new \Exception( 'Unable to remove export file' );
+			throw new \RuntimeException( 'Unable to remove export file' );
 		}
 
 
@@ -97,7 +97,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$textManager = \Aimeos\MShop\Text\Manager\Factory::createManager( $this->context );
 		$criteria = $textManager->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $criteria->compare( '==', 'text.domain', 'product' );
 		$expr[] = $criteria->compare( '==', 'text.languageid', 'en' );
 		$expr[] = $criteria->compare( '==', 'text.status', 1 );
@@ -106,7 +106,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$textItems = $textManager->searchItems( $criteria );
 
-		$textIds = array();
+		$textIds = [];
 		foreach( $textItems as $item )
 		{
 			$textManager->deleteItem( $item->getId() );
@@ -118,7 +118,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$listManager = $productManager->getSubManager( 'lists' );
 		$criteria = $listManager->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $criteria->compare( '==', 'product.lists.domain', 'text' );
 		$expr[] = $criteria->compare( '==', 'product.lists.refid', $textIds );
 		$criteria->setConditions( $criteria->combine( '&&', $expr ) );
@@ -138,7 +138,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 6, count( $listItems ) );
 
 		if( file_exists( $filename ) !== false ) {
-			throw new \Exception( 'Import file was not removed' );
+			throw new \RuntimeException( 'Import file was not removed' );
 		}
 	}
 
@@ -195,7 +195,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			->setMethods( array( 'getUploadedFiles' ) )
 			->disableOriginalConstructor()
 			->getMock();
-		$helper->expects( $this->once() )->method( 'getUploadedFiles' )->will( $this->returnValue( array() ) );
+		$helper->expects( $this->once() )->method( 'getUploadedFiles' )->will( $this->returnValue( [] ) );
 
 		$view = new \Aimeos\MW\View\Standard();
 		$view->addHelper( 'request', $helper );

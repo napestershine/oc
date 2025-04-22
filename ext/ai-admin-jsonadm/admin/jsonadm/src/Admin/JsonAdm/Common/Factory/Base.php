@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Admin
  * @subpackage JsonAdm
  */
@@ -19,7 +19,7 @@ namespace Aimeos\Admin\JsonAdm\Common\Factory;
  */
 class Base
 {
-	private static $objects = array();
+	private static $objects = [];
 
 
 	/**
@@ -44,7 +44,7 @@ class Base
 	 * @param \Aimeos\MShop\Context\Item\Iface $context Context instance with necessary objects
 	 * @param \Aimeos\MW\View\Iface $view View object
 	 * @param array $templatePaths List of file system paths where the templates are stored
-	 * @param string $path Name of the client separated by slashes, e.g "product/stock"
+	 * @param string $path Name of the client separated by slashes, e.g "product/property"
 	 * @return \Aimeos\Admin\JsonAdm\Common\Iface Client object
 	 */
 	protected static function addClientDecorators( \Aimeos\Admin\JsonAdm\Iface $client,
@@ -74,17 +74,14 @@ class Base
 		 * @since 2015.12
 		 * @category Developer
 		 */
-		$decorators = $config->get( 'admin/jsonadm/common/decorators/default', array() );
-
-		$classprefix = '\\Aimeos\\Admin\\JsonAdm\\Common\\Decorator\\';
-		$client = self::addDecorators( $client, $decorators, $classprefix, $context, $view, $templatePaths, $path );
+		$decorators = $config->get( 'admin/jsonadm/common/decorators/default', [] );
 
 		if( $path !== null && is_string( $path ) )
 		{
 			$dpath = trim( $path, '/' );
 			$dpath = ( $dpath !== '' ? $dpath . '/' : $dpath );
 
-			$excludes = $config->get( 'admin/jsonadm/' . $dpath . 'decorators/excludes', array() );
+			$excludes = $config->get( 'admin/jsonadm/' . $dpath . 'decorators/excludes', [] );
 			$localClass = str_replace( ' ', '\\', ucwords( str_replace( '/', ' ', $path ) ) );
 
 			foreach( $decorators as $key => $name )
@@ -95,15 +92,20 @@ class Base
 			}
 
 			$classprefix = '\\Aimeos\\Admin\\JsonAdm\\Common\\Decorator\\';
-			$decorators = $config->get( 'admin/jsonadm/' . $dpath . 'decorators/global', array() );
+			$decorators = $config->get( 'admin/jsonadm/' . $dpath . 'decorators/global', [] );
 			$client = self::addDecorators( $client, $decorators, $classprefix, $context, $view, $templatePaths, $path );
 
 			if( !empty( $path ) )
 			{
 				$classprefix = '\\Aimeos\\Admin\\JsonAdm\\' . ucfirst( $localClass ) . '\\Decorator\\';
-				$decorators = $config->get( 'admin/jsonadm/' . $dpath . 'decorators/local', array() );
+				$decorators = $config->get( 'admin/jsonadm/' . $dpath . 'decorators/local', [] );
 				$client = self::addDecorators( $client, $decorators, $classprefix, $context, $view, $templatePaths, $path );
 			}
+		}
+		else
+		{
+			$classprefix = '\\Aimeos\\Admin\\JsonAdm\\Common\\Decorator\\';
+			$client = self::addDecorators( $client, $decorators, $classprefix, $context, $view, $templatePaths, $path );
 		}
 
 		return $client;

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Controller
  * @subpackage Jobs
  */
@@ -345,7 +345,7 @@ class Standard
 		switch( $name )
 		{
 			case 'domain':
-				return array();
+				return [];
 
 			case 'max-items':
 				/** controller/jobs/product/export/sitemap/max-items

@@ -2,13 +2,16 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2017
  * @package Admin
  * @subpackage JsonAdm
  */
 
 
 namespace Aimeos\Admin\JsonAdm\Locale\Site;
+
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 
 /**
@@ -103,12 +106,11 @@ class Standard
 	/**
 	 * Returns the requested resource or the resource list
 	 *
-	 * @param string $body Request body
-	 * @param array &$header Variable which contains the HTTP headers and the new ones afterwards
-	 * @param integer &$status Variable which contains the HTTP status afterwards
-	 * @return string Content for response body
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	public function get( $body, array &$header, &$status )
+	public function get( ServerRequestInterface $request, ResponseInterface $response )
 	{
 		/** admin/jsonadm/partials/locale/site/template-data
 		 * Relative path to the data partial template file for the locale site  client
@@ -127,29 +129,7 @@ class Standard
 		 */
 		$this->getView()->assign( array( 'partial-data' => 'admin/jsonadm/partials/locale/site/template-data' ) );
 
-		return parent::get( $body, $header, $status );
-	}
-
-
-	/**
-	 * Returns the items with parent/child relationships
-	 *
-	 * @param array $items List of items implementing \Aimeos\MShop\Common\Item\Iface
-	 * @param array $include List of resource types that should be fetched
-	 * @return array List of items implementing \Aimeos\MShop\Common\Item\Iface
-	 */
-	protected function getChildItems( array $items, array $include )
-	{
-		$list = array();
-
-		if( in_array( 'locale/site', $include ) )
-		{
-			foreach( $items as $item ) {
-				$list = array_merge( $list, $item->getChildren() );
-			}
-		}
-
-		return $list;
+		return parent::get( $request, $response );
 	}
 
 
@@ -157,31 +137,28 @@ class Standard
 	 * Retrieves the item or items and adds the data to the view
 	 *
 	 * @param \Aimeos\MW\View\Iface $view View instance
-	 * @return \Aimeos\MW\View\Iface View instance with additional data assigned
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Modified response object
 	 */
-	protected function getItems( \Aimeos\MW\View\Iface $view )
+	protected function getItems( \Aimeos\MW\View\Iface $view, ServerRequestInterface $request, ResponseInterface $response )
 	{
-		$include = ( ( $include = $view->param( 'include' ) ) !== null ? explode( ',', $include ) : array() );
 		$manager = \Aimeos\MShop\Factory::createManager( $this->getContext(), 'locale/site' );
 		$search = $this->initCriteria( $manager->createSearch(), $view->param() );
 		$total = 1;
 
-		if( ( $id = $view->param( 'id' ) ) == null )
-		{
-			$view->data = $manager->searchItems( $search, array(), $total );
-			$view->childItems = $this->getChildItems( $view->data, $include );
-		}
-		else
-		{
-			$view->data = $manager->getTree( $id, array(), \Aimeos\MW\Tree\Manager\Base::LEVEL_LIST, $search );
-			$view->childItems = $this->getChildItems( array( $view->data ), $include );
+		if( ( $id = $view->param( 'id' ) ) == null ) {
+			$view->data = $manager->searchItems( $search, [], $total );
+		} else {
+			$view->data = $manager->getTree( $id, [], \Aimeos\MW\Tree\Manager\Base::LEVEL_ONE, $search );
 		}
 
-		$view->listItems = array();
-		$view->refItems = array();
+		$view->childItems = [];
+		$view->listItems = [];
+		$view->refItems = [];
 		$view->total = $total;
 
-		return $view;
+		return $response;
 	}
 
 
@@ -194,24 +171,17 @@ class Standard
 	 */
 	protected function saveEntry( \Aimeos\MShop\Common\Manager\Iface $manager, \stdClass $entry )
 	{
-		$targetId = ( isset( $entry->targetid ) ? $entry->targetid : null );
-		$refId = ( isset( $entry->refid ) ? $entry->refid : null );
-
 		if( isset( $entry->id ) )
 		{
 			$item = $manager->getItem( $entry->id );
 			$item = $this->addItemData( $manager, $item, $entry, $item->getResourceType() );
-			$manager->saveItem( $item );
-
-			if( isset( $entry->parentid ) && $targetId !== null ) {
-				$manager->moveItem( $item->getId(), $entry->parentid, $targetId, $refId );
-			}
+			$item = $manager->saveItem( $item );
 		}
 		else
 		{
 			$item = $manager->createItem();
 			$item = $this->addItemData( $manager, $item, $entry, $item->getResourceType() );
-			$manager->insertItem( $item, $targetId, $refId );
+			$manager->insertItem( $item );
 		}
 
 		if( isset( $entry->relationships ) ) {

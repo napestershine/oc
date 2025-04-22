@@ -1,25 +1,20 @@
 <?php
 
+/**
+ * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
+ */
+
 namespace Aimeos\Client\Html\Checkout\Standard\Address\Delivery;
 
 
-/**
- * @copyright Metaways Infosystems GmbH, 2013
- * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
- */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
 
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function setUp()
 	{
 		$this->context = \TestHelperHtml::getContext();
@@ -30,23 +25,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function tearDown()
 	{
 		\Aimeos\Controller\Frontend\Basket\Factory::createController( $this->context )->clear();
 		unset( $this->object );
-	}
-
-
-	public function testGetHeader()
-	{
-		$output = $this->object->getHeader();
-		$this->assertNotNull( $output );
 	}
 
 
@@ -223,11 +205,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $manager->searchItems( $search );
 
 		if( ( $item = reset( $result ) ) === false ) {
-			throw new \Exception( 'No customer address found' );
+			throw new \RuntimeException( 'No customer address found' );
 		}
 
 		$item->setId( null );
-		$manager->saveItem( $item );
+		$item = $manager->saveItem( $item );
 
 		$view = \TestHelperHtml::getView();
 		$this->context->setUserId( $item->getParentId() );
@@ -267,7 +249,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $manager->searchItems( $search );
 
 		if( ( $item = reset( $result ) ) === false ) {
-			throw new \Exception( 'No customer address found' );
+			throw new \RuntimeException( 'No customer address found' );
 		}
 
 		$view = \TestHelperHtml::getView();
@@ -278,7 +260,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$this->object->setView( $view );
 
-		$this->setExpectedException( '\\Aimeos\\Client\\Html\\Exception' );
+		$this->setExpectedException( '\Aimeos\Controller\Frontend\Customer\Exception' );
 		$this->object->process();
 	}
 
@@ -291,7 +273,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $customerManager->searchItems( $search );
 
 		if( ( $customer = reset( $result ) ) === false ) {
-			throw new \Exception( 'Customer item not found' );
+			throw new \RuntimeException( 'Customer item not found' );
 		}
 
 		$customerAddressManager = $customerManager->getSubManager( 'address' );
@@ -300,7 +282,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $customerAddressManager->searchItems( $search );
 
 		if( ( $address = reset( $result ) ) === false ) {
-			throw new \Exception( 'Customer address item not found' );
+			throw new \RuntimeException( 'Customer address item not found' );
 		}
 
 		$this->context->setUserId( $customer->getId() );
@@ -325,7 +307,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$view = \TestHelperHtml::getView();
 
-		$param = array( 'ca_deliveryoption' => -1 );
+		$param = array( 'ca_deliveryoption' => 0 );
 		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, $param );
 		$view->addHelper( 'param', $helper );
 

@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -89,7 +89,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$view = $this->setViewParams( $this->getView(), $tags, $expire );
 
@@ -140,7 +140,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string|null String including HTML tags for the header on error
 	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
+	public function getHeader( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$view = $this->setViewParams( $this->getView(), $tags, $expire );
 
@@ -274,7 +274,7 @@ class Standard
 		 * This configuration option overwrites the e-mail address set via
 		 * "client/html/email/bcc-email".
 		 *
-		 * @param string E-mail address
+		 * @param string|array E-mail address or list of e-mail addresses
 		 * @since 2014.03
 		 * @category User
 		 * @category Developer
@@ -282,8 +282,11 @@ class Standard
 		 * @see client/html/email/reply-email
 		 * @see client/html/email/from-email
 		 */
-		if( ( $bccEmailWatch = $view->config( 'client/html/email/watch/bcc-email', $bccEmail ) ) != null ) {
-			$msg->addBcc( $bccEmailWatch );
+		if( ( $bccEmailWatch = $view->config( 'client/html/email/watch/bcc-email', $bccEmail ) ) != null )
+		{
+			foreach( (array) $bccEmailWatch as $emailAddr ) {
+				$msg->addBcc( $emailAddr );
+			}
 		}
 
 
@@ -416,5 +419,44 @@ class Standard
 	protected function getSubClientNames()
 	{
 		return $this->getContext()->getConfig()->get( $this->subPartPath, $this->subPartNames );
+	}
+
+
+	/**
+	 * Sets the necessary parameter values in the view.
+	 *
+	 * @param \Aimeos\MW\View\Iface $view The view object which generates the HTML output
+	 * @param array &$tags Result array for the list of tags that are associated to the output
+	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
+	 * @return \Aimeos\MW\View\Iface Modified view object
+	 */
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
+	{
+		$salutations = array(
+			\Aimeos\MShop\Common\Item\Address\Base::SALUTATION_MR,
+			\Aimeos\MShop\Common\Item\Address\Base::SALUTATION_MRS,
+			\Aimeos\MShop\Common\Item\Address\Base::SALUTATION_MISS,
+		);
+
+		try
+		{
+			$salutation = '';
+			$addr = $view->extAddressItem;
+
+			if( in_array( $addr->getSalutation(), $salutations ) ) {
+				$salutation = $view->translate( 'client/code', $addr->getSalutation() );
+			}
+
+			/// E-mail intro with salutation (%1$s), first name (%2$s) and last name (%3$s)
+			$view->emailIntro = sprintf( $view->translate( 'client', 'Dear %1$s %2$s %3$s' ),
+				$salutation, $addr->getFirstName(), $addr->getLastName()
+			);
+		}
+		catch( \Exception $e )
+		{
+			$view->emailIntro = $view->translate( 'client/html/email', 'Dear Sir or Madam' );
+		}
+
+		return $view;
 	}
 }

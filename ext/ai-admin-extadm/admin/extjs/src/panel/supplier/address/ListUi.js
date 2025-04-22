@@ -1,6 +1,6 @@
 /*!
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos.org, 2015
+ * @copyright Aimeos.org, 2015-2017
  */
 
 Ext.ns('MShop.panel.supplier.address');
@@ -160,6 +160,16 @@ MShop.panel.supplier.address.ListUi = Ext.extend(MShop.panel.AbstractListUi, {
             xtype : 'gridcolumn',
             dataIndex : 'supplier.address.website',
             width : 150,
+            hidden : true
+        }, {
+            xtype : 'gridcolumn',
+            dataIndex : 'supplier.address.latitude',
+            width : 100,
+            hidden : true
+        }, {
+            xtype : 'gridcolumn',
+            dataIndex : 'supplier.address.longitude',
+            width : 100,
             hidden : true
         }, {
             xtype : 'datecolumn',

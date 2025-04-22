@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
 
 
 namespace Aimeos\Admin\JsonAdm\Catalog;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $context;
 	private $object;
@@ -18,8 +18,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	protected function setUp()
 	{
-		$this->context = \TestHelperJadm::getContext();
 		$templatePaths = \TestHelperJadm::getJsonadmPaths();
+		$this->context = \TestHelperJadm::getContext();
 		$this->view = $this->context->getView();
 
 		$this->object = new \Aimeos\Admin\JsonAdm\Catalog\Standard( $this->context, $this->view, $templatePaths, 'catalog' );
@@ -37,18 +37,19 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $this->view, $params );
 		$this->view->addHelper( 'param', $helper );
 
-		$header = array();
-		$status = 500;
+		$response = $this->object->get( $this->view->request(), $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$result = json_decode( $this->object->get( '', $header, $status ), true );
 
-		$this->assertEquals( 200, $status );
-		$this->assertEquals( 1, count( $header ) );
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
 		$this->assertEquals( 1, $result['meta']['total'] );
 		$this->assertEquals( 1, count( $result['data'] ) );
 		$this->assertEquals( 'catalog', $result['data'][0]['type'] );
 		$this->assertEquals( 6, count( $result['data'][0]['relationships']['text'] ) );
 		$this->assertEquals( 6, count( $result['included'] ) );
+
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
 
@@ -56,26 +57,23 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetTree()
 	{
 		$params = array(
-			'id' => $this->getCatalogItem( 'group' )->getId(),
-			'filter' => array(
-				'==' => array( 'catalog.status' => 1 )
-			),
+			'id' => $this->getCatalogItem( 'root' )->getId(),
 			'include' => 'catalog,text'
 		);
 		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $this->view, $params );
 		$this->view->addHelper( 'param', $helper );
 
-		$header = array();
-		$status = 500;
+		$response = $this->object->get( $this->view->request(), $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$result = json_decode( $this->object->get( '', $header, $status ), true );
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
 
-		$this->assertEquals( 200, $status );
-		$this->assertEquals( 1, count( $header ) );
 		$this->assertEquals( 1, $result['meta']['total'] );
 		$this->assertEquals( 'catalog', $result['data']['type'] );
 		$this->assertEquals( 2, count( $result['data']['relationships']['catalog'] ) );
 		$this->assertEquals( 2, count( $result['included'] ) );
+
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
 
@@ -85,7 +83,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$stub = $this->getCatalogMock( array( 'getItem', 'moveItem', 'saveItem' ) );
 
 		$stub->expects( $this->once() )->method( 'moveItem' );
-		$stub->expects( $this->once() )->method( 'saveItem' );
+		$stub->expects( $this->once() )->method( 'saveItem' )
+			->will( $this->returnValue( $stub->createItem() ) );
 		$stub->expects( $this->exactly( 2 ) )->method( 'getItem' ) // 2x due to decorator
 			->will( $this->returnValue( $stub->createItem() ) );
 
@@ -95,16 +94,19 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->view->addHelper( 'param', $helper );
 
 		$body = '{"data": {"parentid": "1", "targetid": 2, "type": "catalog", "attributes": {"catalog.label": "test"}}}';
-		$header = array();
-		$status = 500;
+		$request = $this->view->request()->withBody( $this->view->response()->createStreamFromString( $body ) );
 
-		$result = json_decode( $this->object->patch( $body, $header, $status ), true );
+		$response = $this->object->patch( $request, $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$this->assertEquals( 200, $status );
-		$this->assertEquals( 1, count( $header ) );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
 		$this->assertEquals( 1, $result['meta']['total'] );
 		$this->assertArrayHasKey( 'data', $result );
 		$this->assertEquals( 'catalog', $result['data']['type'] );
+
 		$this->assertArrayNotHasKey( 'included', $result );
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
@@ -120,16 +122,19 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 
 		$body = '{"data": {"type": "catalog", "attributes": {"catalog.code": "test", "catalog.label": "Test catalog"}}}';
-		$header = array();
-		$status = 500;
+		$request = $this->view->request()->withBody( $this->view->response()->createStreamFromString( $body ) );
 
-		$result = json_decode( $this->object->post( $body, $header, $status ), true );
+		$response = $this->object->post( $request, $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$this->assertEquals( 201, $status );
-		$this->assertEquals( 1, count( $header ) );
+
+		$this->assertEquals( 201, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
 		$this->assertEquals( 1, $result['meta']['total'] );
 		$this->assertArrayHasKey( 'data', $result );
 		$this->assertEquals( 'catalog', $result['data']['type'] );
+
 		$this->assertArrayNotHasKey( 'included', $result );
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
@@ -143,7 +148,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$items = $manager->searchItems( $search );
 
 		if( ( $item = reset( $items ) ) === false ) {
-			throw new \Exception( sprintf( 'No catalog item with code "%1$s" found', $code ) );
+			throw new \RuntimeException( sprintf( 'No catalog item with code "%1$s" found', $code ) );
 		}
 
 		return $item;

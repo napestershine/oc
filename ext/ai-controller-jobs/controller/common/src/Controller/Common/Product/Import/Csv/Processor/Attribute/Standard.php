@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Controller
  * @subpackage Common
  */
@@ -91,8 +91,8 @@ class Standard
 
 		try
 		{
-			$listMap = array();
-			$map = $this->getMappedChunk( $data );
+			$listMap = [];
+			$map = $this->getMappedChunk( $data, $this->getMapping() );
 			$listItems = $product->getListItems( 'attribute', $this->listTypes );
 
 			foreach( $listItems as $listItem )
@@ -115,7 +115,7 @@ class Standard
 					$attrItem = $this->getAttributeItem( $code, $list['attribute.type'] );
 					$attrItem->fromArray( $list );
 					$attrItem->setCode( $code );
-					$manager->saveItem( $attrItem );
+					$attrItem = $manager->saveItem( $attrItem );
 
 					$typecode = $this->getValue( $list, 'product.lists.type', 'default' );
 					$list['product.lists.typeid'] = $this->getTypeId( 'product/lists/type', 'attribute', $typecode );
@@ -134,13 +134,13 @@ class Standard
 					}
 
 					$listItem->fromArray( $this->addListItemDefaults( $list, $pos ) );
-					$listManager->saveItem( $listItem );
+					$listManager->saveItem( $listItem, false );
 				}
 			}
 
 			$listManager->deleteItems( array_keys( $listItems ) );
 
-			$remaining = $this->getObject()->process( $product, $data );
+			$data = $this->getObject()->process( $product, $data );
 
 			$manager->commit();
 		}
@@ -150,7 +150,7 @@ class Standard
 			throw $e;
 		}
 
-		return $remaining;
+		return $data;
 	}
 
 
@@ -193,7 +193,7 @@ class Standard
 			$item->setCode( $code );
 			$item->setStatus( 1 );
 
-			$manager->saveItem( $item );
+			$item = $manager->saveItem( $item );
 
 			$this->cache->set( $item );
 		}

@@ -1,24 +1,20 @@
 <?php
 
+/**
+ * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
+ */
+
+
 namespace Aimeos\Client\Html\Locale\Select\Currency;
 
 
-/**
- * @copyright Metaways Infosystems GmbH, 2014
- * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
- */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function setUp()
 	{
 		$paths = \TestHelperHtml::getHtmlTemplatePaths();
@@ -27,27 +23,9 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function tearDown()
 	{
 		unset( $this->object );
-	}
-
-
-	public function testGetHeader()
-	{
-		$tags = array();
-		$expire = null;
-		$output = $this->object->getHeader( 1, $tags, $expire );
-
-		$this->assertNotNull( $output );
-		$this->assertEquals( 0, count( $tags ) );
-		$this->assertEquals( null, $expire );
 	}
 
 
@@ -58,17 +36,17 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$view->selectLanguageId = 'de';
 		$view->selectMap = array(
 			'de' => array(
-				'EUR' => array( 'loc_languageid' => 'de', 'loc_currencyid' => 'EUR' ),
-				'CHF' => array( 'loc_languageid' => 'de', 'loc_currencyid' => 'CHF' ),
+				'EUR' => array( 'locale' => 'de', 'currency' => 'EUR' ),
+				'CHF' => array( 'locale' => 'de', 'currency' => 'CHF' ),
 			),
-			'en' => array( 'USD' => array( 'loc_languageid' => 'en', 'loc_currencyid' => 'USD' ) ),
+			'en' => array( 'USD' => array( 'locale' => 'en', 'currency' => 'USD' ) ),
 		);
 
 		$request = $this->getMockBuilder( '\Psr\Http\Message\ServerRequestInterface' )->getMock();
 		$helper = new \Aimeos\MW\View\Helper\Request\Standard( $view, $request, '127.0.0.1', 'test' );
 		$view->addHelper( 'request', $helper );
 
-		$tags = array();
+		$tags = [];
 		$expire = null;
 		$output = $this->object->getBody( 1, $tags, $expire );
 

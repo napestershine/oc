@@ -4,11 +4,11 @@ namespace Aimeos\Controller\Jobs\Customer\Email\Watch;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -80,11 +80,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$object = $this->getMockBuilder( '\\Aimeos\\Controller\\Jobs\\Customer\\Email\\Watch\\Standard' )
 			->setConstructorArgs( array( $this->context, $this->aimeos ) )
-			->setMethods( array( 'getListProducts' ) )
+			->setMethods( array( 'getProductList' ) )
 			->getMock();
 
-		$object->expects( $this->once() )->method( 'getListProducts' )
-			->will( $this->returnValue( array( -1 => array( 'item' => $product, 'price' => reset( $prices ) ) ) ) );
+		$object->expects( $this->once() )->method( 'getProductList' )
+			->will( $this->returnValue( array( -1 => array( 'item' => $product, 'price' => reset( $prices ), 'currency' => 'EUR' ) ) ) );
 
 
 		$object->run();
@@ -99,7 +99,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$mailStub->expects( $this->once() )
 			->method( 'createMessage' )
-			->will( $this->throwException( new \Exception() ) );
+			->will( $this->throwException( new \RuntimeException() ) );
 
 		$this->context->setMail( $mailStub );
 
@@ -109,11 +109,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$object = $this->getMockBuilder( '\\Aimeos\\Controller\\Jobs\\Customer\\Email\\Watch\\Standard' )
 			->setConstructorArgs( array( $this->context, $this->aimeos ) )
-			->setMethods( array( 'getListProducts' ) )
+			->setMethods( array( 'getProductList' ) )
 			->getMock();
 
-		$object->expects( $this->once() )->method( 'getListProducts' )
-			->will( $this->returnValue( array( -1 => array( 'item' => $product, 'price' => reset( $prices ) ) ) ) );
+		$object->expects( $this->once() )->method( 'getProductList' )
+			->will( $this->returnValue( array( -1 => array( 'item' => $product, 'price' => reset( $prices ), 'currency' => 'EUR' ) ) ) );
 
 
 		$object->run();
@@ -128,7 +128,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$items = $manager->searchItems( $search, array( 'media', 'price', 'text' ) );
 
 		if( ( $item = reset( $items ) ) === false ) {
-			throw new \Exception( 'No product item with code "CNC" found' );
+			throw new \RuntimeException( 'No product item with code "CNC" found' );
 		}
 
 		return $item;

@@ -5,18 +5,15 @@ namespace Aimeos\MShop\Customer\Manager\Address;
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class LaravelTest extends \PHPUnit_Framework_TestCase
+class LaravelTest extends \PHPUnit\Framework\TestCase
 {
 	private $fixture = null;
 	private $object = null;
 	private $editor = 'ai-laravel:unittest';
 
 
-	/**
-	 * Sets up the fixture. This method is called before a test is executed.
-	 */
 	protected function setUp()
 	{
 		$context = \TestHelper::getContext();
@@ -32,7 +29,7 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 		$result = $customer->searchItems( $search );
 
 		if( ( $customerItem = reset( $result ) ) === false ) {
-			throw new \Exception( sprintf( 'No customer item found for code "%1$s"', 'unitCustomer1' ) );
+			throw new \RuntimeException( sprintf( 'No customer item found for code "%1$s"', 'unitCustomer1' ) );
 		}
 
 		$this->fixture = array(
@@ -55,6 +52,8 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 			'customer.address.email' => 'unittest@aimeos.org',
 			'customer.address.telefax' => '05554433222',
 			'customer.address.website' => 'unittest.aimeos.org',
+			'customer.address.longitude' => '10.0',
+			'customer.address.latitude' => '50.0',
 			'customer.address.position' => 1,
 			'customer.address.siteid' => $context->getLocale()->getSiteId(),
 		);
@@ -63,9 +62,6 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	/**
-	 * Tears down the fixture. This method is called after a test is executed.
-	 */
 	protected function tearDown()
 	{
 		unset( $this->object, $this->fixture );
@@ -97,7 +93,7 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 		$items = $this->object->searchItems( $search );
 
 		if( ( $item = reset( $items ) ) === false ) {
-			throw new \Exception( 'No address item with company "ABC" found' );
+			throw new \RuntimeException( 'No address item with company "ABC" found' );
 		}
 
 		$this->assertEquals( $item, $this->object->getItem( $item->getId() ) );
@@ -113,14 +109,14 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 	{
 		$item = new \Aimeos\MShop\Common\Item\Address\Standard( 'customer.address.', $this->fixture );
 		$item->setId( null );
-		$this->object->saveItem( $item );
+		$resultSaved = $this->object->saveItem( $item );
 		$itemSaved = $this->object->getItem( $item->getId() );
 
 		$itemExp = clone $itemSaved;
 		$itemExp->setPosition( 1 );
 		$itemExp->setCity( 'Berlin' );
 		$itemExp->setState( 'Berlin' );
-		$this->object->saveItem( $itemExp );
+		$resultUpd = $this->object->saveItem( $itemExp );
 		$itemUpd = $this->object->getItem( $itemExp->getId() );
 
 		$this->object->deleteItem( $itemSaved->getId() );
@@ -148,6 +144,8 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $item->getEmail(), $itemSaved->getEmail());
 		$this->assertEquals( $item->getTelefax(), $itemSaved->getTelefax());
 		$this->assertEquals( $item->getWebsite(), $itemSaved->getWebsite());
+		$this->assertEquals( $item->getLongitude(), $itemSaved->getLongitude());
+		$this->assertEquals( $item->getLatitude(), $itemSaved->getLatitude());
 		$this->assertEquals( $item->getFlag(), $itemSaved->getFlag());
 
 		$this->assertEquals( $this->editor, $itemSaved->getEditor() );
@@ -175,11 +173,16 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $itemExp->getEmail(), $itemUpd->getEmail());
 		$this->assertEquals( $itemExp->getTelefax(), $itemUpd->getTelefax());
 		$this->assertEquals( $itemExp->getWebsite(), $itemUpd->getWebsite());
+		$this->assertEquals( $itemExp->getLongitude(), $itemUpd->getLongitude());
+		$this->assertEquals( $itemExp->getLatitude(), $itemUpd->getLatitude());
 		$this->assertEquals( $itemExp->getFlag(), $itemUpd->getFlag());
 
 		$this->assertEquals( $this->editor, $itemUpd->getEditor() );
 		$this->assertEquals( $itemExp->getTimeCreated(), $itemUpd->getTimeCreated() );
 		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified() );
+
+		$this->assertInstanceOf( '\Aimeos\MShop\Common\Item\Iface', $resultSaved );
+		$this->assertInstanceOf( '\Aimeos\MShop\Common\Item\Iface', $resultUpd );
 
 		$this->setExpectedException('\\Aimeos\\MShop\\Exception');
 		$this->object->getItem( $itemSaved->getId() );
@@ -195,11 +198,36 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 	{
 		$search = $this->object->createSearch();
 
-		$conditions = array(
-			$search->compare( '==', 'customer.address.company', 'ABC' ),
-			$search->compare( '==', 'customer.address.editor', $this->editor )
-		);
-		$search->setConditions( $search->combine( '&&', $conditions ) );
+		$expr = [];
+		$expr[] = $search->compare( '!=', 'customer.address.id', null );
+		$expr[] = $search->compare( '!=', 'customer.address.parentid', null );
+		$expr[] = $search->compare( '==', 'customer.address.company', 'ABC GmbH' );
+		$expr[] = $search->compare( '==', 'customer.address.vatid', 'DE999999999' );
+		$expr[] = $search->compare( '==', 'customer.address.salutation', 'mr' );
+		$expr[] = $search->compare( '==', 'customer.address.title', 'Dr.' );
+		$expr[] = $search->compare( '==', 'customer.address.firstname', 'Good' );
+		$expr[] = $search->compare( '==', 'customer.address.lastname', 'Unittest' );
+		$expr[] = $search->compare( '==', 'customer.address.address1', 'Pickhuben' );
+		$expr[] = $search->compare( '==', 'customer.address.address2', '2-4' );
+		$expr[] = $search->compare( '==', 'customer.address.address3', '' );
+		$expr[] = $search->compare( '==', 'customer.address.postal', '11099' );
+		$expr[] = $search->compare( '==', 'customer.address.city', 'Berlin' );
+		$expr[] = $search->compare( '==', 'customer.address.state', 'Berlin' );
+		$expr[] = $search->compare( '==', 'customer.address.languageid', 'de' );
+		$expr[] = $search->compare( '==', 'customer.address.countryid', 'DE' );
+		$expr[] = $search->compare( '==', 'customer.address.telephone', '055544332221' );
+		$expr[] = $search->compare( '==', 'customer.address.email', 'unitCustomer2@aimeos.org' );
+		$expr[] = $search->compare( '==', 'customer.address.telefax', '055544333212' );
+		$expr[] = $search->compare( '==', 'customer.address.website', 'unittest.aimeos.org' );
+		$expr[] = $search->compare( '>=', 'customer.address.longitude', '10.0' );
+		$expr[] = $search->compare( '>=', 'customer.address.latitude', '50.0' );
+		$expr[] = $search->compare( '==', 'customer.address.flag', 0 );
+		$expr[] = $search->compare( '==', 'customer.address.position', 1 );
+		$expr[] = $search->compare( '!=', 'customer.address.mtime', '1970-01-01 00:00:00' );
+		$expr[] = $search->compare( '!=', 'customer.address.ctime', '1970-01-01 00:00:00' );
+		$expr[] = $search->compare( '==', 'customer.address.editor', $this->editor );
+
+		$search->setConditions( $search->combine( '&&', $expr ) );
 		$this->assertEquals( 1, count( $this->object->searchItems( $search ) ) );
 	}
 
@@ -217,7 +245,7 @@ class LaravelTest extends \PHPUnit_Framework_TestCase
 		$search->setConditions( $search->combine( '&&', $conditions ) );
 		$search->setSlice( 0, 1 );
 
-		$results = $this->object->searchItems( $search, array(), $total );
+		$results = $this->object->searchItems( $search, [], $total );
 
 		$this->assertEquals( 1, count( $results ) );
 		$this->assertEquals( 2, $total );

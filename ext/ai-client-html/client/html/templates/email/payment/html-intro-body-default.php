@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Copyright (c) Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
 
 $enc = $this->encoder();
@@ -18,11 +18,11 @@ $format = $this->translate( 'client', 'Y-m-d' );
 
 $string = sprintf( $msg, $order->getId(), date_create( $order->getTimeCreated() )->format( $format ), $status );
 
+
 ?>
 <?php $this->block()->start( 'email/payment/html/intro' ); ?>
 <p class="email-common-intro content-block">
-<?php echo $enc->html( nl2br( $string ), $enc::TRUST ); ?>
-<?php echo $this->get( 'introBody' ); ?>
+	<?= $enc->html( nl2br( $string ), $enc::TRUST ); ?>
 </p>
 <?php $this->block()->stop(); ?>
-<?php echo $this->block()->get( 'email/payment/html/intro' ); ?>
+<?= $this->block()->get( 'email/payment/html/intro' ); ?>

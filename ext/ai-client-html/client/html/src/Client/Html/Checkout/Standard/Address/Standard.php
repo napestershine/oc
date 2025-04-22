@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -95,11 +95,11 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$view = $this->getView();
 		$step = $view->get( 'standardStepActive', 'address' );
-		$onepage = $view->config( 'client/html/checkout/standard/onepage', array() );
+		$onepage = $view->config( 'client/html/checkout/standard/onepage', [] );
 
 		if( $step != 'address' && !( in_array( 'address', $onepage ) && in_array( $step, $onepage ) ) ) {
 			return '';
@@ -148,49 +148,17 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string|null String including HTML tags for the header on error
 	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
+	public function getHeader( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$view = $this->getView();
 		$step = $view->get( 'standardStepActive' );
-		$onepage = $view->config( 'client/html/checkout/standard/onepage', array() );
+		$onepage = $view->config( 'client/html/checkout/standard/onepage', [] );
 
 		if( $step != 'address' && !( in_array( 'address', $onepage ) && in_array( $step, $onepage ) ) ) {
 			return '';
 		}
 
-		$view = $this->setViewParams( $view, $tags, $expire );
-
-		$html = '';
-		foreach( $this->getSubClients() as $subclient ) {
-			$html .= $subclient->setView( $view )->getHeader( $uid, $tags, $expire );
-		}
-		$view->addressHeader = $html;
-
-		/** client/html/checkout/standard/address/standard/template-header
-		 * Relative path to the HTML header template of the checkout standard address client.
-		 *
-		 * The template file contains the HTML code and processing instructions
-		 * to generate the HTML code that is inserted into the HTML page header
-		 * of the rendered page in the frontend. The configuration string is the
-		 * path to the template file relative to the templates directory (usually
-		 * in client/html/templates).
-		 *
-		 * You can overwrite the template file configuration in extensions and
-		 * provide alternative templates. These alternative templates should be
-		 * named like the default one but with the string "standard" replaced by
-		 * an unique name. You may use the name of your project for this. If
-		 * you've implemented an alternative client class as well, "standard"
-		 * should be replaced by the name of the new class.
-		 *
-		 * @param string Relative path to the template creating code for the HTML page head
-		 * @since 2014.03
-		 * @category Developer
-		 * @see client/html/checkout/standard/address/standard/template-body
-		 */
-		$tplconf = 'client/html/checkout/standard/address/standard/template-header';
-		$default = 'checkout/standard/address-header-default.php';
-
-		return $view->render( $view->config( $tplconf, $default ) );
+		return parent::getHeader( $uid, $tags, $expire );
 	}
 
 
@@ -338,55 +306,36 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return \Aimeos\MW\View\Iface Modified view object
 	 */
-	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = array(), &$expire = null )
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
 	{
 		if( !isset( $this->cache ) )
 		{
 			$context = $this->getContext();
+			$controller = \Aimeos\Controller\Frontend\Factory::createController( $context, 'customer' );
+			$orderAddressManager = \Aimeos\MShop\Factory::createManager( $context, 'order/base/address' );
 
-
-			$customerManager = \Aimeos\MShop\Factory::createManager( $context, 'customer' );
-
-			$search = $customerManager->createSearch( true );
-			$expr = array(
-				$search->compare( '==', 'customer.id', $context->getUserId() ),
-				$search->getConditions(),
-			);
-			$search->setConditions( $search->combine( '&&', $expr ) );
-
-			$items = $customerManager->searchItems( $search );
-
-			if( ( $item = reset( $items ) ) !== false )
+			try
 			{
-				$deliveryAddressItems = array();
+				$deliveryAddressItems = [];
+				$item = $controller->getItem( $context->getUserId(), ['address'] );
 
-				$orderAddressManager = \Aimeos\MShop\Factory::createManager( $context, 'order/base/address' );
-				$customerAddressManager = \Aimeos\MShop\Factory::createManager( $context, 'customer/address' );
-
-				$search = $customerAddressManager->createSearch();
-				$search->setConditions( $search->compare( '==', 'customer.address.parentid', $item->getId() ) );
-
-				foreach( $customerAddressManager->searchItems( $search ) as $id => $address )
-				{
-					$deliveryAddressItem = $orderAddressManager->createItem();
-					$deliveryAddressItem->copyFrom( $address );
-
-					$deliveryAddressItems[$id] = $deliveryAddressItem;
+				foreach( $item->getAddressItems() as $id => $addrItem ) {
+					$deliveryAddressItems[$id] = $orderAddressManager->createItem()->copyFrom( $addrItem );
 				}
 
-				$paymentAddressItem = $orderAddressManager->createItem();
-				$paymentAddressItem->copyFrom( $item->getPaymentAddress() );
+				$paymentAddressItem = $orderAddressManager->createItem()->copyFrom( $item->getPaymentAddress() );
 
 				$view->addressCustomerItem = $item;
 				$view->addressPaymentItem = $paymentAddressItem;
 				$view->addressDeliveryItems = $deliveryAddressItems;
 			}
+			catch( \Exception $e ) {} // customer has no account yet
 
 
 			$localeManager = \Aimeos\MShop\Factory::createManager( $context, 'locale' );
 			$locales = $localeManager->searchItems( $localeManager->createSearch( true ) );
 
-			$languages = array();
+			$languages = [];
 			foreach( $locales as $locale ) {
 				$languages[$locale->getLanguageId()] = $locale->getLanguageId();
 			}
@@ -424,7 +373,7 @@ class Standard
 			 * @see client/html/checkout/standard/address/delivery/mandatory
 			 * @see client/html/checkout/standard/address/delivery/optional
 			 */
-			$view->addressCountries = $view->config( 'client/html/checkout/standard/address/countries', array() );
+			$view->addressCountries = $view->config( 'client/html/checkout/standard/address/countries', [] );
 
 			/** client/html/checkout/standard/address/states
 			 * List of available states that that users can select from in the front-end
@@ -471,9 +420,9 @@ class Standard
 			 * @see client/html/checkout/standard/address/delivery/mandatory
 			 * @see client/html/checkout/standard/address/delivery/optional
 			 */
-			$view->addressStates = $view->config( 'client/html/checkout/standard/address/states', array() );
+			$view->addressStates = $view->config( 'client/html/checkout/standard/address/states', [] );
 
-			$view->addressExtra = $context->getSession()->get( 'client/html/checkout/standard/address/extra', array() );
+			$view->addressExtra = $context->getSession()->get( 'client/html/checkout/standard/address/extra', [] );
 
 			$this->cache = $view;
 		}

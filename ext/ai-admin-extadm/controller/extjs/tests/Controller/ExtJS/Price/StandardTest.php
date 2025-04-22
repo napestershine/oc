@@ -4,11 +4,11 @@ namespace Aimeos\Controller\ExtJS\Price;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2011
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2011
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -90,7 +90,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$items = $productsList->searchItems( $search );
 
 		if( ( $productItem = reset( $items ) ) === false ) {
-			throw new \Exception( 'No item found' );
+			throw new \RuntimeException( 'No item found' );
 		}
 
 		$parentid = $productItem->getParentId();
@@ -133,7 +133,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $controller->searchItems( $params );
 
 		if( ( $priceItem = reset( $result['items'] ) ) === false ) {
-			throw new \Exception( 'No type item found' );
+			throw new \RuntimeException( 'No type item found' );
 		}
 
 		$saveParams = (object) array(

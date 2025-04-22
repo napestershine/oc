@@ -4,11 +4,11 @@ namespace Aimeos\Client\Html\Catalog\Suggest;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -40,12 +40,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetHeaderException()
 	{
 		$object = $this->getMockBuilder( '\Aimeos\Client\Html\Catalog\Suggest\Standard' )
-			->setConstructorArgs( array( $this->context, array() ) )
+			->setConstructorArgs( array( $this->context, [] ) )
 			->setMethods( array( 'setViewParams' ) )
 			->getMock();
 
 		$object->expects( $this->once() )->method( 'setViewParams' )
-			->will( $this->throwException( new \Exception() ) );
+			->will( $this->throwException( new \RuntimeException() ) );
 
 		$object->setView( \TestHelperHtml::getView() );
 
@@ -63,7 +63,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$suggestItems = $this->object->getView()->suggestItems;
 
 		$this->assertRegExp( '#\[\{"label":"Unterpro.*","html":".*Unterpro.*"\}\]#smU', $output );
-		$this->assertNotEquals( array(), $suggestItems );
+		$this->assertNotEquals( [], $suggestItems );
 
 		foreach( $suggestItems as $item ) {
 			$this->assertInstanceOf( '\Aimeos\MShop\Product\Item\Iface', $item );
@@ -83,7 +83,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$suggestItems = $this->object->getView()->suggestItems;
 
 		$this->assertRegExp( '#\[\{"label":"Unit.*","html":".*Unit.*"\}.*\]#smU', $output );
-		$this->assertNotEquals( array(), $suggestItems );
+		$this->assertNotEquals( [], $suggestItems );
 
 		foreach( $suggestItems as $item ) {
 			$this->assertInstanceOf( '\Aimeos\MShop\Product\Item\Iface', $item );
@@ -94,12 +94,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetBodyException()
 	{
 		$object = $this->getMockBuilder( '\Aimeos\Client\Html\Catalog\Suggest\Standard' )
-			->setConstructorArgs( array( $this->context, array() ) )
+			->setConstructorArgs( array( $this->context, [] ) )
 			->setMethods( array( 'setViewParams' ) )
 			->getMock();
 
 		$object->expects( $this->once() )->method( 'setViewParams' )
-			->will( $this->throwException( new \Exception() ) );
+			->will( $this->throwException( new \RuntimeException() ) );
 
 		$object->setView( \TestHelperHtml::getView() );
 

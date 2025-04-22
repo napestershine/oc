@@ -1,6 +1,6 @@
 /*!
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos.org, 2015
+ * @copyright Aimeos.org, 2015-2017
  */
 
 Ext.ns('MShop.panel.customer');
@@ -234,6 +234,18 @@ MShop.panel.customer.ItemUi = Ext.extend(MShop.panel.AbstractListItemUi, {
                                         fieldLabel : MShop.I18n.dt('admin', 'Website'),
                                         emptyText : MShop.I18n.dt('admin', 'Web site, e.g. www.example.com'),
                                         maxLength : 255
+                                    }, {
+                                        xtype : 'ux.decimalfield',
+                                        name : 'customer.latitude',
+                                        fieldLabel : MShop.I18n.dt('admin', 'Latitude'),
+                                        emptyText : MShop.I18n.dt('admin', 'Latitude, e.g. 50.000000'),
+                                        decimalPrecision: 6
+                                    }, {
+                                        xtype : 'ux.decimalfield',
+                                        name : 'customer.longitude',
+                                        fieldLabel : MShop.I18n.dt('admin', 'Longitude'),
+                                        emptyText : MShop.I18n.dt('admin', 'Longitude, e.g. 10.000000'),
+                                        decimalPrecision: 6
                                 }]
                             }]
                         }]

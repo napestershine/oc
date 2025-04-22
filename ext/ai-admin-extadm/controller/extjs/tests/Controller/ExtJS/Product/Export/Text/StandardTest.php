@@ -4,11 +4,11 @@ namespace Aimeos\Controller\ExtJS\Product\Export\Text;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -44,14 +44,14 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$productManager = \Aimeos\MShop\Product\Manager\Factory::createManager( $this->context );
 		$criteria = $productManager->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $criteria->compare( '==', 'product.code', 'CNE' );
 		$criteria->setConditions( $criteria->compare( '==', 'product.code', 'CNE' ) );
 
 		$searchResult = $productManager->searchItems( $criteria );
 
 		if( ( $productItem = reset( $searchResult ) ) === false ) {
-			throw new \Exception( 'No item with product code CNE found' );
+			throw new \RuntimeException( 'No item with product code CNE found' );
 		}
 
 		$params = new \stdClass();
@@ -76,14 +76,14 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$zip->close();
 
 		if( unlink( $file ) === false ) {
-			throw new \Exception( 'Unable to remove export file' );
+			throw new \RuntimeException( 'Unable to remove export file' );
 		}
 
 		$deCSV = $testdir . DIRECTORY_SEPARATOR . 'de.csv';
 
 		$this->assertTrue( file_exists( $deCSV ) );
 		$fh = fopen( $deCSV, 'r' );
-		$lines = array();
+		$lines = [];
 
 		while( ( $data = fgetcsv( $fh ) ) != false ) {
 			$lines[] = $data;
@@ -92,11 +92,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		fclose( $fh );
 
 		if( unlink( $deCSV ) === false ) {
-			throw new \Exception( 'Unable to remove export file' );
+			throw new \RuntimeException( 'Unable to remove export file' );
 		}
 
 		if( rmdir( $testdir ) === false ) {
-			throw new \Exception( 'Unable to remove test export directory' );
+			throw new \RuntimeException( 'Unable to remove test export directory' );
 		}
 
 		$this->assertEquals( $lines[0][0], 'Language ID' );

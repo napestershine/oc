@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
 
 
 namespace Aimeos\Admin\JsonAdm\Price;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $context;
 	private $object;
@@ -22,7 +22,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$templatePaths = \TestHelperJadm::getJsonadmPaths();
 		$this->view = $this->context->getView();
 
-		$this->object = new \Aimeos\Admin\JsonAdm\Media\Standard( $this->context, $this->view, $templatePaths, 'price' );
+		$this->object = new \Aimeos\Admin\JsonAdm\Price\Standard( $this->context, $this->view, $templatePaths, 'price' );
 	}
 
 
@@ -37,18 +37,19 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $this->view, $params );
 		$this->view->addHelper( 'param', $helper );
 
-		$header = array();
-		$status = 500;
+		$response = $this->object->get( $this->view->request(), $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$result = json_decode( $this->object->get( '', $header, $status ), true );
 
-		$this->assertEquals( 200, $status );
-		$this->assertEquals( 1, count( $header ) );
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
 		$this->assertEquals( 2, $result['meta']['total'] );
 		$this->assertEquals( 2, count( $result['data'] ) );
 		$this->assertEquals( 'price', $result['data'][0]['type'] );
 		$this->assertEquals( 0, count( $result['data'][0]['relationships'] ) );
 		$this->assertEquals( 0, count( $result['included'] ) );
+
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
 }

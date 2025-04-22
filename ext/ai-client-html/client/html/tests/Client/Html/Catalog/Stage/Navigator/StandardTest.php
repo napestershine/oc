@@ -1,24 +1,20 @@
 <?php
 
+/**
+ * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
+ */
+
+
 namespace Aimeos\Client\Html\Catalog\Stage\Navigator;
 
 
-/**
- * @copyright Metaways Infosystems GmbH, 2014
- * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
- */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function setUp()
 	{
 		$context = \TestHelperHtml::getContext();
@@ -28,38 +24,16 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function tearDown()
 	{
 		unset( $this->object );
 	}
 
 
-	public function testGetHeader()
-	{
-		$view = $this->object->getView();
-		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, array( 'l_pos' => 1 ) );
-		$view->addHelper( 'param', $helper );
-
-		$view->navigationPrev = '#';
-		$view->navigationNext = '#';
-
-		$output = $this->object->getHeader();
-
-		$this->assertContains( '<link rel="prev"', $output );
-		$this->assertContains( '<link rel="next prefetch"', $output );
-	}
-
-
 	public function testGetBody()
 	{
 		$view = $this->object->getView();
-		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, array( 'l_pos' => 1 ) );
+		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, array( 'd_pos' => 1 ) );
 		$view->addHelper( 'param', $helper );
 
 		$view->navigationPrev = '#';
@@ -76,7 +50,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testModifyHeader()
 	{
 		$view = $this->object->getView();
-		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, array( 'l_pos' => 1 ) );
+		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, array( 'd_pos' => 1 ) );
 		$view->addHelper( 'param', $helper );
 
 		$content = '<!-- catalog.stage.navigator -->test<!-- catalog.stage.navigator -->';
@@ -89,7 +63,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testModifyBody()
 	{
 		$view = $this->object->getView();
-		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, array( 'l_pos' => 1 ) );
+		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $view, array( 'd_pos' => 1 ) );
 		$view->addHelper( 'param', $helper );
 
 		$content = '<!-- catalog.stage.navigator -->test<!-- catalog.stage.navigator -->';

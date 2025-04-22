@@ -4,11 +4,11 @@ namespace Aimeos\Client\Html\Email\Watch;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private static $productItems;
 	private static $customerItem;
@@ -28,7 +28,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $manager->searchItems( $search );
 
 		if( ( self::$customerItem = reset( $result ) ) === false ) {
-			throw new \Exception( 'No customer found' );
+			throw new \RuntimeException( 'No customer found' );
 		}
 
 		$manager = \Aimeos\MShop\Product\Manager\Factory::createManager( $context );
@@ -41,6 +41,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			$prices = $product->getRefItems( 'price', 'default', 'default' );
 
 			self::$productItems[$id]['price'] = reset( $prices );
+			self::$productItems[$id]['currency'] = 'EUR';
 			self::$productItems[$id]['item'] = $product;
 		}
 	}
@@ -110,7 +111,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetBody()
 	{
 		$output = $this->object->getBody();
-		$this->assertNotNull( $output );
+
+		$this->assertContains( 'Dear mr Our Unittest', $output );
 	}
 
 

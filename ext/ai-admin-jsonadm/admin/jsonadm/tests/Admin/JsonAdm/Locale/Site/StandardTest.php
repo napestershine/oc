@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
 
 
 namespace Aimeos\Admin\JsonAdm\Locale\Site;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $context;
 	private $object;
@@ -26,6 +26,31 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
+	public function testGet()
+	{
+		$params = array(
+			'id' => $this->getSiteItem( 'unittest' )->getId(),
+			'filter' => array(
+				'==' => array( 'locale.status' => 0 )
+			),
+		);
+		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $this->view, $params );
+		$this->view->addHelper( 'param', $helper );
+
+		$response = $this->object->get( $this->view->request(), $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
+
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
+		$this->assertEquals( 1, $result['meta']['total'] );
+		$this->assertEquals( 'locale/site', $result['data']['type'] );
+
+		$this->assertArrayNotHasKey( 'errors', $result );
+	}
+
+
 	public function testGetSearch()
 	{
 		$params = array(
@@ -36,43 +61,17 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $this->view, $params );
 		$this->view->addHelper( 'param', $helper );
 
-		$header = array();
-		$status = 500;
+		$response = $this->object->get( $this->view->request(), $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$result = json_decode( $this->object->get( '', $header, $status ), true );
 
-		$this->assertEquals( 200, $status );
-		$this->assertEquals( 1, count( $header ) );
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
 		$this->assertEquals( 1, $result['meta']['total'] );
 		$this->assertEquals( 1, count( $result['data'] ) );
 		$this->assertEquals( 'locale/site', $result['data'][0]['type'] );
-		$this->assertEquals( 0, count( $result['included'] ) );
-		$this->assertArrayNotHasKey( 'errors', $result );
-	}
 
-
-	public function testGetTree()
-	{
-		$params = array(
-			'id' => $this->getSiteItem( 'unittest' )->getId(),
-			'filter' => array(
-				'==' => array( 'locale.status' => 0 )
-			),
-			'include' => 'locale/site'
-		);
-		$helper = new \Aimeos\MW\View\Helper\Param\Standard( $this->view, $params );
-		$this->view->addHelper( 'param', $helper );
-
-		$header = array();
-		$status = 500;
-
-		$result = json_decode( $this->object->get( '', $header, $status ), true );
-
-		$this->assertEquals( 200, $status );
-		$this->assertEquals( 1, count( $header ) );
-		$this->assertEquals( 1, $result['meta']['total'] );
-		$this->assertEquals( 'locale/site', $result['data']['type'] );
-		$this->assertEquals( 0, count( $result['included'] ) );
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
 
@@ -82,8 +81,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$stub = $this->getSiteMock( array( 'getItem', 'moveItem', 'saveItem' ) );
 		$item = $stub->createItem();
 
-		$stub->expects( $this->once() )->method( 'moveItem' );
-		$stub->expects( $this->once() )->method( 'saveItem' );
+		$stub->expects( $this->once() )->method( 'saveItem' )
+			->will( $this->returnValue( $stub->createItem() ) );
 		$stub->expects( $this->exactly( 2 ) )->method( 'getItem' ) // 2x due to decorator
 			->will( $this->returnValue( $item ) );
 
@@ -93,16 +92,19 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->view->addHelper( 'param', $helper );
 
 		$body = '{"data": {"parentid": "1", "targetid": 2, "type": "locale/site", "attributes": {"locale.site.label": "test"}}}';
-		$header = array();
-		$status = 500;
+		$request = $this->view->request()->withBody( $this->view->response()->createStreamFromString( $body ) );
 
-		$result = json_decode( $this->object->patch( $body, $header, $status ), true );
+		$response = $this->object->patch( $request, $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$this->assertEquals( 200, $status );
-		$this->assertEquals( 1, count( $header ) );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
 		$this->assertEquals( 1, $result['meta']['total'] );
 		$this->assertArrayHasKey( 'data', $result );
 		$this->assertEquals( 'locale/site', $result['data']['type'] );
+
 		$this->assertArrayNotHasKey( 'included', $result );
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
@@ -119,16 +121,19 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 
 		$body = '{"data": {"type": "locale/site", "attributes": {"locale.site.code": "unittest", "locale.site.label": "Unit test"}}}';
-		$header = array();
-		$status = 500;
+		$request = $this->view->request()->withBody( $this->view->response()->createStreamFromString( $body ) );
 
-		$result = json_decode( $this->object->post( $body, $header, $status ), true );
+		$response = $this->object->post( $request, $this->view->response() );
+		$result = json_decode( (string) $response->getBody(), true );
 
-		$this->assertEquals( 201, $status );
-		$this->assertEquals( 1, count( $header ) );
+
+		$this->assertEquals( 201, $response->getStatusCode() );
+		$this->assertEquals( 1, count( $response->getHeader( 'Content-Type' ) ) );
+
 		$this->assertEquals( 1, $result['meta']['total'] );
 		$this->assertArrayHasKey( 'data', $result );
 		$this->assertEquals( 'locale/site', $result['data']['type'] );
+
 		$this->assertArrayNotHasKey( 'included', $result );
 		$this->assertArrayNotHasKey( 'errors', $result );
 	}
@@ -142,7 +147,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$items = $manager->searchItems( $search );
 
 		if( ( $item = reset( $items ) ) === false ) {
-			throw new \Exception( sprintf( 'No locale site item with code "%1$s" found', $code ) );
+			throw new \RuntimeException( sprintf( 'No locale site item with code "%1$s" found', $code ) );
 		}
 
 		return $item;
@@ -151,7 +156,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	protected function getSiteMock( array $methods )
 	{
-		$name = 'ClientJsonAdmStandard';
+		$name = 'AdminJsonAdmStandard';
 		$this->context->getConfig()->set( 'mshop/locale/manager/name', $name );
 
 		$stub = $this->getMockBuilder( '\\Aimeos\\MShop\\Locale\\Manager\\Standard' )

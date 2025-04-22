@@ -157,7 +157,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Laravel\Tinker\TinkerServiceProvider::class,
-		Aimeos\Shop\ShopServiceProvider::class,
 
     ],
 

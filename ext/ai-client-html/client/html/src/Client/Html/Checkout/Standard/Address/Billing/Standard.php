@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -56,7 +56,7 @@ class Standard
 	 * @category Developer
 	 */
 	private $subPartPath = 'client/html/checkout/standard/address/billing/standard/subparts';
-	private $subPartNames = array();
+	private $subPartNames = [];
 	private $cache;
 
 	private $mandatory = array(
@@ -87,7 +87,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
 		$view = $this->setViewParams( $this->getView(), $tags, $expire );
 
@@ -119,52 +119,6 @@ class Standard
 		 */
 		$tplconf = 'client/html/checkout/standard/address/billing/standard/template-body';
 		$default = 'checkout/standard/address-billing-body-default.php';
-
-		return $view->render( $view->config( $tplconf, $default ) );
-	}
-
-
-	/**
-	 * Returns the HTML string for insertion into the header.
-	 *
-	 * @param string $uid Unique identifier for the output if the content is placed more than once on the same page
-	 * @param array &$tags Result array for the list of tags that are associated to the output
-	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
-	 * @return string|null String including HTML tags for the header on error
-	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
-	{
-		$view = $this->setViewParams( $this->getView(), $tags, $expire );
-
-		$html = '';
-		foreach( $this->getSubClients() as $subclient ) {
-			$html .= $subclient->setView( $view )->getHeader( $uid, $tags, $expire );
-		}
-		$view->billingHeader = $html;
-
-		/** client/html/checkout/standard/address/billing/standard/template-header
-		 * Relative path to the HTML header template of the checkout standard address billing client.
-		 *
-		 * The template file contains the HTML code and processing instructions
-		 * to generate the HTML code that is inserted into the HTML page header
-		 * of the rendered page in the frontend. The configuration string is the
-		 * path to the template file relative to the templates directory (usually
-		 * in client/html/templates).
-		 *
-		 * You can overwrite the template file configuration in extensions and
-		 * provide alternative templates. These alternative templates should be
-		 * named like the default one but with the string "standard" replaced by
-		 * an unique name. You may use the name of your project for this. If
-		 * you've implemented an alternative client class as well, "standard"
-		 * should be replaced by the name of the new class.
-		 *
-		 * @param string Relative path to the template creating code for the HTML page head
-		 * @since 2014.03
-		 * @category Developer
-		 * @see client/html/checkout/standard/address/billing/standard/template-body
-		 */
-		$tplconf = 'client/html/checkout/standard/address/billing/standard/template-header';
-		$default = 'checkout/standard/address-billing-header-default.php';
 
 		return $view->render( $view->config( $tplconf, $default ) );
 	}
@@ -373,6 +327,47 @@ class Standard
 		 */
 		$optional = $view->config( 'client/html/checkout/standard/address/billing/optional', $this->optional );
 
+		/** client/html/checkout/standard/address/billing/hidden
+		 * List of billing address input fields that are optional and should be hidden
+		 *
+		 * You can configure the list of billing address fields that
+		 * are hidden when a customer enters his new billing address.
+		 * Available field keys are:
+		 * * order.base.address.company
+		 * * order.base.address.vatid
+		 * * order.base.address.salutation
+		 * * order.base.address.firstname
+		 * * order.base.address.lastname
+		 * * order.base.address.address1
+		 * * order.base.address.address2
+		 * * order.base.address.address3
+		 * * order.base.address.postal
+		 * * order.base.address.city
+		 * * order.base.address.state
+		 * * order.base.address.languageid
+		 * * order.base.address.countryid
+		 * * order.base.address.telephone
+		 * * order.base.address.telefax
+		 * * order.base.address.email
+		 * * order.base.address.website
+		 *
+		 * Caution: Only hide fields that don't require any input
+		 *
+		 * Until 2015-02, the configuration option was available as
+		 * "client/html/common/address/billing/hidden" starting from 2014-03.
+		 *
+		 * @param array List of field keys
+		 * @since 2015.02
+		 * @category User
+		 * @category Developer
+		 * @see client/html/checkout/standard/address/billing/disable-new
+		 * @see client/html/checkout/standard/address/billing/salutations
+		 * @see client/html/checkout/standard/address/billing/mandatory
+		 * @see client/html/checkout/standard/address/billing/optional
+		 * @see client/html/checkout/standard/address/countries
+		 */
+		$hidden = $view->config( 'client/html/checkout/standard/address/billing/hidden', [] );
+
 		/** client/html/checkout/standard/address/validate
 		 * List of regular expressions to validate the data of the address fields
 		 *
@@ -430,7 +425,7 @@ class Standard
 		 * @see client/html/checkout/standard/address/billing/optional
 		 */
 
-		$allFields = array_flip( array_merge( $mandatory, $optional ) );
+		$allFields = array_flip( array_merge( $mandatory, $optional, $hidden ) );
 		$invalid = $this->validateFields( $params, $allFields );
 		$this->checkSalutation( $params, $mandatory );
 
@@ -552,10 +547,9 @@ class Standard
 
 		if( ( $option = $view->param( 'ca_billingoption', 'null' ) ) === 'null' && $disable === false ) // new address
 		{
-			$params = $view->param( 'ca_billing', array() );
-			$invalid = $this->checkFields( $params );
+			$params = $view->param( 'ca_billing', [] );
 
-			if( count( $invalid ) > 0 )
+			if( ( $invalid = $this->checkFields( $params ) ) !== [] )
 			{
 				$view->billingError = $invalid;
 				throw new \Aimeos\Client\Html\Exception( sprintf( 'At least one billing address part is missing or invalid' ) );
@@ -565,35 +559,23 @@ class Standard
 		}
 		else // existing address
 		{
-			$item = $this->getCustomerItem( $option );
-			$customerManager = \Aimeos\MShop\Factory::createManager( $context, 'customer' );
+			$list = [];
+			$params = $view->param( 'ca_billing_' . $option, [] );
 
-			$invalid = array();
-			$addr = $item->getPaymentAddress();
-			$params = $view->param( 'ca_billing_' . $option, array() );
-
-			if( !empty( $params ) )
-			{
-				$list = array();
-				$invalid = $this->checkFields( $params );
-
-				foreach( $params as $key => $value ) {
-					$list[str_replace( 'order.base', 'customer', $key )] = $value;
-				}
-
-				$addr->fromArray( $list );
-				$item->setPaymentAddress( $addr );
-
-				$customerManager->saveItem( $item );
-			}
-
-			if( count( $invalid ) > 0 )
+			if( !empty( $params ) && ( $invalid = $this->checkFields( $params ) ) !== [] )
 			{
 				$view->billingError = $invalid;
 				throw new \Aimeos\Client\Html\Exception( sprintf( 'At least one billing address part is missing or invalid' ) );
 			}
 
-			$basketCtrl->setAddress( $type, $addr );
+			foreach( $params as $key => $value ) {
+				$list[str_replace( 'order.base.address', 'customer', $key )] = $value;
+			}
+
+			$controller = \Aimeos\Controller\Frontend\Factory::createController( $context, 'customer' );
+			$customer = $controller->editItem( $option, $list );
+
+			$basketCtrl->setAddress( $type, $customer->getPaymentAddress() );
 		}
 	}
 
@@ -606,7 +588,7 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return \Aimeos\MW\View\Iface Modified view object
 	 */
-	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = array(), &$expire = null )
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
 	{
 		if( !isset( $this->cache ) )
 		{
@@ -620,48 +602,9 @@ class Standard
 			}
 			$view->billingLanguage = $langid;
 
-			/** client/html/checkout/standard/address/billing/hidden
-			 * List of billing address input fields that are optional and should be hidden
-			 *
-			 * You can configure the list of billing address fields that
-			 * are hidden when a customer enters his new billing address.
-			 * Available field keys are:
-			 * * order.base.address.company
-			 * * order.base.address.vatid
-			 * * order.base.address.salutation
-			 * * order.base.address.firstname
-			 * * order.base.address.lastname
-			 * * order.base.address.address1
-			 * * order.base.address.address2
-			 * * order.base.address.address3
-			 * * order.base.address.postal
-			 * * order.base.address.city
-			 * * order.base.address.state
-			 * * order.base.address.languageid
-			 * * order.base.address.countryid
-			 * * order.base.address.telephone
-			 * * order.base.address.telefax
-			 * * order.base.address.email
-			 * * order.base.address.website
-			 *
-			 * Caution: Only hide fields that don't require any input
-			 *
-			 * Until 2015-02, the configuration option was available as
-			 * "client/html/common/address/billing/hidden" starting from 2014-03.
-			 *
-			 * @param array List of field keys
-			 * @since 2015.02
-			 * @category User
-			 * @category Developer
-			 * @see client/html/checkout/standard/address/billing/disable-new
-			 * @see client/html/checkout/standard/address/billing/salutations
-			 * @see client/html/checkout/standard/address/billing/mandatory
-			 * @see client/html/checkout/standard/address/billing/optional
-			 * @see client/html/checkout/standard/address/countries
-			 */
-			$hidden = $view->config( 'client/html/checkout/standard/address/billing/hidden', array() );
+			$hidden = $view->config( 'client/html/checkout/standard/address/billing/hidden', [] );
 
-			if( count( $view->get( 'addressLanguages', array() ) ) === 1 ) {
+			if( count( $view->get( 'addressLanguages', [] ) ) === 1 ) {
 				$hidden[] = 'order.base.address.languageid';
 			}
 
@@ -822,7 +765,7 @@ class Standard
 		 * @see client/html/checkout/standard/address/validate
 		 */
 
-		$invalid = array();
+		$invalid = [];
 
 		foreach( $params as $key => $value )
 		{

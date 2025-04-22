@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -19,7 +19,7 @@ namespace Aimeos\Client\Html\Basket;
  * @subpackage Html
  */
 abstract class Base
-	extends \Aimeos\Client\Html\Common\Client\Factory\Base
+	extends \Aimeos\Client\Html\Common\Client\Summary\Base
 {
 	/**
 	 * Removes all cached basket parts from the cache.
@@ -28,7 +28,7 @@ abstract class Base
 	{
 		$session = $this->getContext()->getSession();
 
-		foreach( $session->get( 'aimeos/basket/cache', array() ) as $key => $value ) {
+		foreach( $session->get( 'aimeos/basket/cache', [] ) as $key => $value ) {
 			$session->set( $key, null );
 		}
 	}
@@ -76,7 +76,7 @@ abstract class Base
 		{
 			$session = $context->getSession();
 
-			$cached = $session->get( 'aimeos/basket/cache', array() ) + array( $key => true );
+			$cached = $session->get( 'aimeos/basket/cache', [] ) + array( $key => true );
 			$session->set( 'aimeos/basket/cache', $cached );
 			$session->set( $key, $value );
 		}

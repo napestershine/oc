@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package MShop
  * @subpackage Customer
  */
@@ -31,7 +31,7 @@ class Laravel
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		// site ID is not available
+		// customer.siteid is only for informational purpuse, not for filtering
 		'customer.address.refid' => array(
 			'label' => 'Customer address parent ID',
 			'code' => 'customer.address.parentid',
@@ -166,6 +166,20 @@ class Laravel
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
+		'customer.address.longitude' => array(
+			'label' => 'Customer address longitude',
+			'code' => 'customer.address.longitude',
+			'internalcode' => 'lvuad."longitude"',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'customer.address.latitude' => array(
+			'label' => 'Customer address latitude',
+			'code' => 'customer.address.latitude',
+			'internalcode' => 'lvuad."latitude"',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
 		'customer.address.flag' => array(
 			'label' => 'Customer address flag',
 			'code' => 'customer.address.flag',
@@ -212,8 +226,8 @@ class Laravel
 	public function cleanup( array $siteids )
 	{
 		$path = 'mshop/customer/manager/address/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->cleanup( $siteids );
 		}
 	}
 
@@ -240,7 +254,7 @@ class Laravel
 	{
 		$path = 'mshop/customer/manager/address/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 

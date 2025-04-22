@@ -4,11 +4,11 @@ namespace Aimeos\Client\Html\Catalog\Lists\Promo;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2012
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2012
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $context;
 	private $catItem;
@@ -34,11 +34,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$catItems = $catalogManager->searchItems( $search, array( 'product' ) );
 
 		if( ( $this->catItem = reset( $catItems ) ) === false ) {
-			throw new \Exception( 'No catalog item found' );
+			throw new \RuntimeException( 'No catalog item found' );
 		}
 
 		$this->view = \TestHelperHtml::getView();
-		$this->view->listParams = array();
+		$this->view->listParams = [];
 		$this->view->listCurrentCatItem = $this->catItem;
 		$this->object->setView( $this->view );
 	}
@@ -58,11 +58,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetHeader()
 	{
-		$tags = array();
+		$tags = [];
 		$expire = null;
 		$output = $this->object->getHeader( 1, $tags, $expire );
 
-		$this->assertStringStartsWith( '<script type="text/javascript"', $output );
+		$this->assertContains( '<script type="text/javascript"', $output );
 		$this->assertEquals( '2022-01-01 00:00:00', $expire );
 		$this->assertEquals( 1, count( $tags ) );
 	}
@@ -70,11 +70,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetBody()
 	{
-		$tags = array();
+		$tags = [];
 		$expire = null;
 		$output = $this->object->getBody( 1, $tags, $expire );
 
-		$this->assertStringStartsWith( '<section class="catalog-list-promo">', $output );
+		$this->assertContains( '<section class="catalog-list-promo">', $output );
 		$this->assertRegExp( '/.*Expresso.*Cappuccino.*/smu', $output );
 		$this->assertEquals( '2022-01-01 00:00:00', $expire );
 		$this->assertEquals( 1, count( $tags ) );
@@ -89,7 +89,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$output = $this->object->getBody();
 
-		$this->assertStringStartsWith( '<section class="catalog-list-promo">', $output );
+		$this->assertContains( '<section class="catalog-list-promo">', $output );
 		$this->assertRegExp( '/.*Expresso.*Cappuccino.*/smu', $output );
 	}
 

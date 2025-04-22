@@ -4,11 +4,11 @@ namespace Aimeos\Client\Html\Basket\Mini;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2013
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -40,12 +40,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetHeaderException()
 	{
 		$object = $this->getMockBuilder( '\Aimeos\Client\Html\Basket\Mini\Standard' )
-			->setConstructorArgs( array( $this->context, array() ) )
+			->setConstructorArgs( array( $this->context, [] ) )
 			->setMethods( array( 'setViewParams' ) )
 			->getMock();
 
 		$object->expects( $this->once() )->method( 'setViewParams' )
-			->will( $this->throwException( new \Exception() ) );
+			->will( $this->throwException( new \RuntimeException() ) );
 
 		$object->setView( \TestHelperHtml::getView() );
 
@@ -57,15 +57,39 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$output = $this->object->getBody();
 		$miniBasket = $this->object->getView()->miniBasket;
+
 		$this->assertTrue( $miniBasket instanceof \Aimeos\MShop\Order\Item\Base\Iface );
-		$this->assertStringStartsWith( '<section class="aimeos basket-mini">', $output );
+		$this->assertContains( '<section class="aimeos basket-mini"', $output );
+		$this->assertContains( '<div class="basket-mini-main">', $output );
+		$this->assertContains( '<div class="basket-mini-product">', $output );
+	}
+
+
+	public function testGetBodyAddedOneProduct()
+	{
+		$controller = \Aimeos\Controller\Frontend\Basket\Factory::createController( $this->context );
+
+		$productItem = $this->getProductItem( 'CNE' );
+
+		$view = $this->object->getView();
+
+		$controller->addProduct( $productItem->getId(), 9, [], [], [], [], [], 'default' );
+		$view->miniBasket = $controller->get();
+
+		$output = $this->object->getBody();
+
+		$controller->clear();
+
+		$this->assertContains( '<div class="basket-mini-product">', $output );
+		$this->assertRegExp( '#9#smU', $output );
+		$this->assertRegExp( '#171.00#smU', $output );
 	}
 
 
 	public function testGetBodyHtmlException()
 	{
 		$object = $this->getMockBuilder( '\Aimeos\Client\Html\Basket\Mini\Standard' )
-			->setConstructorArgs( array( $this->context, array() ) )
+			->setConstructorArgs( array( $this->context, [] ) )
 			->setMethods( array( 'setViewParams' ) )
 			->getMock();
 
@@ -81,7 +105,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetBodyFrontendException()
 	{
 		$object = $this->getMockBuilder( '\Aimeos\Client\Html\Basket\Mini\Standard' )
-			->setConstructorArgs( array( $this->context, array() ) )
+			->setConstructorArgs( array( $this->context, [] ) )
 			->setMethods( array( 'setViewParams' ) )
 			->getMock();
 
@@ -97,7 +121,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetBodyMShopException()
 	{
 		$object = $this->getMockBuilder( '\Aimeos\Client\Html\Basket\Mini\Standard' )
-			->setConstructorArgs( array( $this->context, array() ) )
+			->setConstructorArgs( array( $this->context, [] ) )
 			->setMethods( array( 'setViewParams' ) )
 			->getMock();
 
@@ -107,13 +131,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$object->setView( \TestHelperHtml::getView() );
 
 		$this->assertContains( 'test exception', $object->getBody() );
-	}
-
-
-	public function testGetSubClient()
-	{
-		$client = $this->object->getSubClient( 'main', 'Standard' );
-		$this->assertInstanceOf( '\\Aimeos\\Client\\HTML\\Iface', $client );
 	}
 
 
@@ -134,5 +151,23 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testProcess()
 	{
 		$this->object->process();
+	}
+
+
+	/**
+	* @param string $code
+	*/
+	protected function getProductItem( $code )
+	{
+		$manager = \Aimeos\MShop\Product\Manager\Factory::createManager( $this->context );
+		$search = $manager->createSearch();
+		$search->setConditions( $search->compare( '==', 'product.code', $code ) );
+		$items = $manager->searchItems( $search, array( 'price' ) );
+
+		if( ( $item = reset( $items ) ) === false ) {
+			throw new \RuntimeException( sprintf( 'No product item with code "%1$s" found', $code ) );
+		}
+
+		return $item;
 	}
 }

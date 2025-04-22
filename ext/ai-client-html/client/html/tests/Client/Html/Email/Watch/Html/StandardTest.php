@@ -4,11 +4,11 @@ namespace Aimeos\Client\Html\Email\Watch\Html;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private static $productItems;
 	private static $customerItem;
@@ -28,7 +28,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $manager->searchItems( $search );
 
 		if( ( self::$customerItem = reset( $result ) ) === false ) {
-			throw new \Exception( 'No customer found' );
+			throw new \RuntimeException( 'No customer found' );
 		}
 
 		$manager = \Aimeos\MShop\Product\Manager\Factory::createManager( $context );
@@ -41,6 +41,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			$prices = $product->getRefItems( 'price', 'default', 'default' );
 
 			self::$productItems[$id]['price'] = reset( $prices );
+			self::$productItems[$id]['currency'] = 'EUR';
 			self::$productItems[$id]['item'] = $product;
 		}
 	}
@@ -81,13 +82,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testGetHeader()
-	{
-		$output = $this->object->getHeader();
-		$this->assertNotNull( $output );
-	}
-
-
 	public function testGetBody()
 	{
 		$ds = DIRECTORY_SEPARATOR;
@@ -104,6 +98,18 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertStringStartsWith( '<html>', $output );
 		$this->assertContains( 'cid:123-unique-id', $output );
+
+		$this->assertContains( '<p class="email-common-salutation', $output );
+
+		$this->assertContains( '<p class="email-common-intro', $output );
+		$this->assertContains( 'One or more products', $output );
+
+		$this->assertContains( '<div class="common-summary-detail common-summary container content-block">', $output );
+		$this->assertContains( 'Cafe Noire Cappuccino', $output );
+		$this->assertContains( 'Cafe Noire Expresso', $output );
+
+		$this->assertContains( '<p class="email-common-outro', $output );
+		$this->assertContains( 'If you have any questions', $output );
 	}
 
 

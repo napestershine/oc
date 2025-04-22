@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2017
  * @package Client
  * @subpackage Html
  */
@@ -56,7 +56,7 @@ class Standard
 	 * @category Developer
 	 */
 	private $subPartPath = 'client/html/catalog/session/pinned/standard/subparts';
-	private $subPartNames = array();
+	private $subPartNames = [];
 	private $cache;
 
 
@@ -68,8 +68,9 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return string HTML code
 	 */
-	public function getBody( $uid = '', array &$tags = array(), &$expire = null )
+	public function getBody( $uid = '', array &$tags = [], &$expire = null )
 	{
+		$view = $this->getView();
 		$context = $this->getContext();
 		$session = $context->getSession();
 
@@ -83,12 +84,12 @@ class Standard
 		 * @category Developer
 		 * @see client/html/catalog/session#pinned
 		 */
-		$config = $context->getConfig()->get( 'client/html/catalog/session/pinned', array() );
-		$key = $this->getParamHash( array(), $uid . ':catalog:session-pinned-body', $config );
+		$config = $context->getConfig()->get( 'client/html/catalog/session/pinned', [] );
+		$key = $this->getParamHash( [], $uid . ':catalog:session-pinned-body', $config );
 
 		if( ( $html = $session->get( $key ) ) === null )
 		{
-			$view = $this->setViewParams( $this->getView(), $tags, $expire );
+			$view = $this->setViewParams( $view, $tags, $expire );
 
 			$output = '';
 			foreach( $this->getSubClients() as $subclient ) {
@@ -121,71 +122,12 @@ class Standard
 
 			$html = $view->render( $view->config( $tplconf, $default ) );
 
-			$cached = $session->get( 'aimeos/catalog/session/pinned/cache', array() ) + array( $key => true );
+			$cached = $session->get( 'aimeos/catalog/session/pinned/cache', [] ) + array( $key => true );
 			$session->set( 'aimeos/catalog/session/pinned/cache', $cached );
 			$session->set( $key, $html );
 		}
 
-		return $html;
-	}
-
-
-	/**
-	 * Returns the HTML string for insertion into the header.
-	 *
-	 * @param string $uid Unique identifier for the output if the content is placed more than once on the same page
-	 * @param array &$tags Result array for the list of tags that are associated to the output
-	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
-	 * @return string|null String including HTML tags for the header on error
-	 */
-	public function getHeader( $uid = '', array &$tags = array(), &$expire = null )
-	{
-		$context = $this->getContext();
-		$session = $context->getSession();
-
-		$config = $context->getConfig()->get( 'client/html/catalog/session/pinned', array() );
-		$key = $this->getParamHash( array(), $uid . ':catalog:session-pinned-header', $config );
-
-		if( ( $html = $session->get( $key ) ) === null )
-		{
-			$view = $this->setViewParams( $this->getView(), $tags, $expire );
-
-			$output = '';
-			foreach( $this->getSubClients() as $subclient ) {
-				$output .= $subclient->setView( $view )->getHeader( $uid, $tags, $expire );
-			}
-			$view->pinnedHeader = $output;
-
-			/** client/html/catalog/session/pinned/standard/template-header
-			 * Relative path to the HTML header template of the catalog session pinned client.
-			 *
-			 * The template file contains the HTML code and processing instructions
-			 * to generate the HTML code that is inserted into the HTML page header
-			 * of the rendered page in the frontend. The configuration string is the
-			 * path to the template file relative to the templates directory (usually
-			 * in client/html/templates).
-			 *
-			 * You can overwrite the template file configuration in extensions and
-			 * provide alternative templates. These alternative templates should be
-			 * named like the default one but with the string "standard" replaced by
-			 * an unique name. You may use the name of your project for this. If
-			 * you've implemented an alternative client class as well, "standard"
-			 * should be replaced by the name of the new class.
-			 *
-			 * @param string Relative path to the template creating code for the HTML page head
-			 * @since 2014.03
-			 * @category Developer
-			 * @see client/html/catalog/session/pinned/standard/template-body
-			 */
-			$tplconf = 'client/html/catalog/session/pinned/standard/template-header';
-			$default = 'catalog/session/pinned-header-default.php';
-
-			$html = $view->render( $view->config( $tplconf, $default ) );
-
-			$cached = $session->get( 'aimeos/catalog/session/pinned/cache', array() ) + array( $key => true );
-			$session->set( 'aimeos/catalog/session/pinned/cache', $cached );
-			$session->set( $key, $html );
-		}
+		$view->block()->set( 'catalog/session/pinned', $html );
 
 		return $html;
 	}
@@ -289,13 +231,13 @@ class Standard
 		$view = $this->getView();
 		$context = $this->getContext();
 		$session = $context->getSession();
-		$pinned = $session->get( 'aimeos/catalog/session/pinned/list', array() );
+		$pinned = $session->get( 'aimeos/catalog/session/pinned/list', [] );
 
 		switch( $view->param( 'pin_action' ) )
 		{
 			case 'add':
 
-				foreach( (array) $view->param( 'pin_id', array() ) as $id ) {
+				foreach( (array) $view->param( 'pin_id', [] ) as $id ) {
 					$pinned[$id] = $id;
 				}
 
@@ -324,7 +266,7 @@ class Standard
 
 			case 'delete':
 
-				foreach( (array) $view->param( 'pin_id', array() ) as $id ) {
+				foreach( (array) $view->param( 'pin_id', [] ) as $id ) {
 					unset( $pinned[$id] );
 				}
 
@@ -337,7 +279,7 @@ class Standard
 		{
 			$session->set( 'aimeos/catalog/session/pinned/list', $pinned );
 
-			foreach( $session->get( 'aimeos/catalog/session/pinned/cache', array() ) as $key => $value ) {
+			foreach( $session->get( 'aimeos/catalog/session/pinned/cache', [] ) as $key => $value ) {
 				$session->set( $key, null );
 			}
 		}
@@ -365,12 +307,12 @@ class Standard
 	 * @param string|null &$expire Result variable for the expiration date of the output (null for no expiry)
 	 * @return \Aimeos\MW\View\Iface Modified view object
 	 */
-	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = array(), &$expire = null )
+	protected function setViewParams( \Aimeos\MW\View\Iface $view, array &$tags = [], &$expire = null )
 	{
 		if( !isset( $this->cache ) )
 		{
 			$expire = null;
-			$tags = $items = array();
+			$tags = $items = [];
 			$context = $this->getContext();
 			$config = $context->getConfig();
 			$session = $context->getSession();
@@ -401,7 +343,7 @@ class Standard
 			 */
 			$domains = $config->get( 'client/html/catalog/session/pinned/domains', $domains );
 
-			$pinned = $session->get( 'aimeos/catalog/session/pinned/list', array() );
+			$pinned = $session->get( 'aimeos/catalog/session/pinned/list', [] );
 
 			$controller = \Aimeos\Controller\Frontend\Factory::createController( $context, 'catalog' );
 			$result = $controller->getProductItems( $pinned, $domains );

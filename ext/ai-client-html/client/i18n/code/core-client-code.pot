@@ -1,8 +1,8 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
-# 
+#
+#
 # Translators:
 # Translators:
 # Translators:
@@ -176,9 +176,13 @@ msgstr "Expiry month"
 msgid "payment.expiryyear"
 msgstr "Expiry year"
 
-#. Warehouse code
+#. Stock type
+msgid "stocktype:default"
+msgstr " "
+
+#. Warehouse type (pre 2017.x)
 msgid "warehouse:default"
-msgstr "warehouse:default"
+msgstr " "
 
 #. Favorite action
 msgid "favorite"
@@ -211,3 +215,10 @@ msgstr "package-weight"
 msgid "price:default"
 msgstr "%1$s %2$s"
 
+#. Pick-up time
+msgid "time.hourminute"
+msgstr "Pick-up time"
+
+#. Pick-up location
+msgid "supplier.code"
+msgstr "Pick-up location"

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2017
  * @package Controller
  * @subpackage Jobs
  */
@@ -67,11 +67,14 @@ class Standard
 					throw new \Aimeos\Controller\Jobs\Exception( $str );
 				}
 
-				$password = ( isset( $list['customer.password'] ) ? $list['customer.password'] : '' );
+				$password = ( isset( $list['customer.password'] ) ? $list['customer.password'] : null );
 				$item = $custManager->createItem();
 				$item->fromArray( $list );
 
 				$this->sendEmail( $context, $item, $password );
+
+				$str = sprintf( 'Sent customer account e-mail to "%1$s"', $item->getPaymentAddress()->getEmail() );
+				$context->getLogger()->log( $str, \Aimeos\MW\Logger\Base::DEBUG );
 			}
 			catch( \Exception $e )
 			{

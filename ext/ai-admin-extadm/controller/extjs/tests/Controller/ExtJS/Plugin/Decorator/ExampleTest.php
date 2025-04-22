@@ -4,11 +4,11 @@ namespace Aimeos\Controller\ExtJS\Plugin\Decorator;
 
 
 /**
- * @copyright Metaways Infosystems GmbH, 2012
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015
+ * @copyright Metaways Infosystems GmbH, 2012
+ * @copyright Aimeos (aimeos.org), 2015-2017
  */
-class ExampleTest extends \PHPUnit_Framework_TestCase
+class ExampleTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -53,7 +53,7 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
 		$result = $this->object->searchItems( $params );
 
 		if( ( $plugin = reset( $result ) ) === false ) {
-			throw new \Exception( 'No plugin found' );
+			throw new \RuntimeException( 'No plugin found' );
 		}
 
 		$this->assertEquals( 1, count( $plugin ) );
@@ -71,7 +71,7 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
 		$result = $typeManager->searchItems( $search );
 
 		if( ( $type = reset( $result ) ) === false ) {
-			throw new \Exception( 'No plugin type found' );
+			throw new \RuntimeException( 'No plugin type found' );
 		}
 
 		$saveParams = (object) array(
@@ -125,7 +125,7 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
 
 	public function testCall()
 	{
-		$result = $this->object->__call( 'getServiceDescription', array() );
+		$result = $this->object->__call( 'getServiceDescription', [] );
 		$this->assertInternalType( 'array', $result );
 	}
 
