@@ -98,9 +98,9 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'email' => 'auth.emails.password',
-            'table' => 'password_resets',
+            'table' => 'password_reset_tokens',
             'expire' => 60,
+            'throttle' => 60,
         ],
     ],
 
