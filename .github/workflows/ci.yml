@@ -52,4 +52,4 @@ jobs:
       - name: Run tests
         env:
           DB_HOST: localhost
-        run: php artisan test
+        run: vendor/bin/phpunit
