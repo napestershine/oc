@@ -26,9 +26,9 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $response = $this->post('/forgot-password', ['email' => $user->email]);
+        $status = Password::sendResetLink(['email' => $user->email]);
 
-        $response->assertSessionHasNoErrors();
+        $this->assertSame(Password::RESET_LINK_SENT, $status, "Password broker returned: $status");
         Notification::assertSentTo($user, ResetPassword::class);
     }
 
