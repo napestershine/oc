@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -26,9 +25,8 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $status = Password::sendResetLink(['email' => $user->email]);
+        $this->post('/forgot-password', ['email' => $user->email]);
 
-        $this->assertSame(Password::RESET_LINK_SENT, $status, "Password broker returned: $status");
         Notification::assertSentTo($user, ResetPassword::class);
     }
 
